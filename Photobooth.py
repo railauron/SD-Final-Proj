@@ -8,7 +8,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDTextButton
 from kivymd.uix.label import MDLabel
 from kivymd.uix.navigationdrawer import MDNavigationDrawer
-
+from kivymd.uix.button import MDIconButton
 
 class ArrowButton(Button):
     pass
@@ -358,30 +358,54 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-
-    FitImage:
-        source: "set1 (2).png"
+    
+    MDIconButton:
         size_hint: None, None
         size: 200, 200
         pos_hint: {"center_x": 0.20, "center_y": 0.35}
-
-    FitImage:
-        source: "set2.png"
+        on_release: app.on_image_click("set1 (2).png")
+        
+        FitImage:
+            source: "set1 (2).png"
+            size_hint: None, None
+            size: 200, 200
+            pos_hint: {"center_x": 0.20, "center_y": 0.35}
+    
+    MDIconButton: 
         size_hint: None, None
         size: 200, 300
         pos_hint: {"center_x": 0.35, "center_y": 0.40}
-
-    FitImage:
-        source: "set3.png"
+        on_release: app.on_image_click("set2.png")
+        
+        FitImage:
+            source: "set2.png"
+            size_hint: None, None
+            size: 200, 300
+            pos_hint: {"center_x": 0.35, "center_y": 0.40}
+    
+    MDIconButton:
         size_hint: None, None
         size: 200, 400
         pos_hint: {"center_x": 0.52, "center_y": 0.454}
-        
-    FitImage:
-        source: "set4.png"
+        on_release: app.on_image_click("set3.png")
+    
+        FitImage:
+            source: "set3.png"
+            size_hint: None, None
+            size: 200, 400
+            pos_hint: {"center_x": 0.52, "center_y": 0.454}
+    
+    MDIconButton:
         size_hint: None, None
         size: 300, 300
         pos_hint: {"center_x": 0.73, "center_y": 0.353}
+        on_release: app.on_image_click("set4.png")
+       
+        FitImage:
+            source: "set4.png"
+            size_hint: None, None
+            size: 300, 300
+            pos_hint: {"center_x": 0.73, "center_y": 0.353}
 
 '''
 
@@ -413,6 +437,10 @@ class Photobooth(MDApp):
 
     def forgot_password(self):
         print("Forgot Password clicked!")
+
+    def on_image_click(self, image_name):
+        print(f"Clicked on: set1 (2).png")
+
 
 
 if __name__ == "__main__":
