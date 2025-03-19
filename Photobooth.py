@@ -13,24 +13,22 @@ from kivymd.uix.button import MDIconButton
 class ArrowButton(Button):
     pass
 
-
 class MainScreen(Screen):
     pass
-
 
 class SignIn(Screen):
     pass
 
-
 class RegisterForm(Screen):
     pass
-
 
 class LogInForm(Screen):
     pass
 
-
 class HomePage(Screen):
+    pass
+
+class CameraPage(Screen):
     pass
 
 
@@ -41,6 +39,7 @@ ScreenManager:
     RegisterForm:
     LogInForm:
     HomePage:
+    CameraPage:
 
 <ArrowButton@Button>:
     size_hint: None, None
@@ -358,55 +357,71 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-    
-    MDIconButton:
+
+    # Image 1
+    FitImage:
+        source: "set1 (2).png"
         size_hint: None, None
         size: 200, 200
         pos_hint: {"center_x": 0.20, "center_y": 0.35}
-        on_release: app.on_image_click("set1 (2).png")
-        
-        FitImage:
-            source: "set1 (2).png"
-            size_hint: None, None
-            size: 200, 200
-            pos_hint: {"center_x": 0.20, "center_y": 0.35}
     
-    MDIconButton: 
+    MDIconButton:
+        icon: ""  # No visible icon
+        size_hint: None, None
+        size: 200, 200
+        pos_hint: {"center_x": 0.20, "center_y": 0.35}
+        on_release: app.root.current = 'camera'
+
+    # Image 2
+    FitImage:
+        source: "set2.png"
         size_hint: None, None
         size: 200, 300
         pos_hint: {"center_x": 0.35, "center_y": 0.40}
-        on_release: app.on_image_click("set2.png")
-        
-        FitImage:
-            source: "set2.png"
-            size_hint: None, None
-            size: 200, 300
-            pos_hint: {"center_x": 0.35, "center_y": 0.40}
     
     MDIconButton:
+        icon: ""
+        size_hint: None, None
+        size: 200, 300
+        pos_hint: {"center_x": 0.35, "center_y": 0.40}
+        on_release: app.root.current = 'camera'
+
+    # Image 3
+    FitImage:
+        source: "set3.png"
         size_hint: None, None
         size: 200, 400
         pos_hint: {"center_x": 0.52, "center_y": 0.454}
-        on_release: app.on_image_click("set3.png")
-    
-        FitImage:
-            source: "set3.png"
-            size_hint: None, None
-            size: 200, 400
-            pos_hint: {"center_x": 0.52, "center_y": 0.454}
     
     MDIconButton:
+        icon: ""
+        size_hint: None, None
+        size: 200, 400
+        pos_hint: {"center_x": 0.52, "center_y": 0.454}
+        on_release: app.root.current = 'camera'
+
+    # Image 4
+    FitImage:
+        source: "set4.png"
         size_hint: None, None
         size: 300, 300
         pos_hint: {"center_x": 0.73, "center_y": 0.353}
-        on_release: app.on_image_click("set4.png")
-       
-        FitImage:
-            source: "set4.png"
-            size_hint: None, None
-            size: 300, 300
-            pos_hint: {"center_x": 0.73, "center_y": 0.353}
+    
+    MDIconButton:
+        icon: ""
+        size_hint: None, None
+        size: 300, 300
+        pos_hint: {"center_x": 0.73, "center_y": 0.353}
+        on_release: app.root.current = 'camera'
 
+<CameraPage>:
+    name: 'camera'
+    canvas.before:
+        Color:
+            rgba: (240/255, 246/255, 237/255, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
 '''
 
 
@@ -438,8 +453,8 @@ class Photobooth(MDApp):
     def forgot_password(self):
         print("Forgot Password clicked!")
 
-    def on_image_click(self, image_name):
-        print(f"Clicked on: set1 (2).png")
+    def on_image_click(selfself, image_name):
+        print(f"Clicked on: {image_name}")
 
 
 
