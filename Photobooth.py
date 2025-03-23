@@ -7,8 +7,15 @@ from kivymd.uix.fitimage import FitImage
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDTextButton
 from kivymd.uix.label import MDLabel
-from kivymd.uix.navigationdrawer import MDNavigationDrawer
+from kivymd.uix.navigationdrawer import MDNavigationDrawer, MDNavigationDrawerItem
 from kivymd.uix.button import MDIconButton
+from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.toolbar import MDTopAppBar
+from kivy.metrics import dp
+from kivy.graphics import Color, Rectangle
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.image import Image
 
 class ArrowButton(Button):
     pass
@@ -30,7 +37,6 @@ class HomePage(Screen):
 
 class CameraPage(Screen):
     pass
-
 
 KV = '''
 ScreenManager:
@@ -357,63 +363,50 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-
-    # Image 1
-    FitImage:
+            
+    MDNavigationLayout:
+        ScreenManager:
+            Screen:
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    
+                    Widget: 
+                       
+                    MDBoxLayout:
+                        size_hint_y: None
+                        height: dp(56)
+                        padding: dp(10)
+                        pos_hint: {"top": 1, "right": 1}  
+                        spacing: dp(10) 
+                        
+                        MDIconButton:
+                            icon: "menu"
+                            theme_icon_color: "Custom"
+                            icon_color: "black"
+                            on_release: nav_drawer.set_state("open")
+                         
+        MDNavigationDrawer:
+            id: nav_drawer
+            anchor: 'right'
+            
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: dp(20)
+                padding: dp(20)   
+                    
+    ClickableImage:
         source: "set1 (2).png"
         size_hint: None, None
-        size: 200, 200
-        pos_hint: {"center_x": 0.20, "center_y": 0.35}
-    
-    MDIconButton:
-        icon: ""  # No visible icon
-        size_hint: None, None
-        size: 200, 200
-        pos_hint: {"center_x": 0.20, "center_y": 0.35}
-        on_release: app.root.current = 'camera'
-
-    # Image 2
-    FitImage:
+        size: dp(200), dp(200)
+        pos_hint: {"center_y": 0.5, "x": 0.15}
+        
+    ClickableImage:
         source: "set2.png"
         size_hint: None, None
-        size: 200, 300
-        pos_hint: {"center_x": 0.35, "center_y": 0.40}
+        size: dp(250), dp(250)
+        pos_hint: {"center_y": 0.5, "x": 0.30}
+                    
     
-    MDIconButton:
-        icon: ""
-        size_hint: None, None
-        size: 200, 300
-        pos_hint: {"center_x": 0.35, "center_y": 0.40}
-        on_release: app.root.current = 'camera'
-
-    # Image 3
-    FitImage:
-        source: "set3.png"
-        size_hint: None, None
-        size: 200, 400
-        pos_hint: {"center_x": 0.52, "center_y": 0.454}
-    
-    MDIconButton:
-        icon: ""
-        size_hint: None, None
-        size: 200, 400
-        pos_hint: {"center_x": 0.52, "center_y": 0.454}
-        on_release: app.root.current = 'camera'
-
-    # Image 4
-    FitImage:
-        source: "set4.png"
-        size_hint: None, None
-        size: 300, 300
-        pos_hint: {"center_x": 0.73, "center_y": 0.353}
-    
-    MDIconButton:
-        icon: ""
-        size_hint: None, None
-        size: 300, 300
-        pos_hint: {"center_x": 0.73, "center_y": 0.353}
-        on_release: app.root.current = 'camera'
-
 <CameraPage>:
     name: 'camera'
     canvas.before:
@@ -421,7 +414,9 @@ ScreenManager:
             rgba: (240/255, 246/255, 237/255, 1)
         Rectangle:
             size: self.size
-            pos: self.pos
+            pos: self.pos   
+
+
 '''
 
 
@@ -456,7 +451,9 @@ class Photobooth(MDApp):
     def on_image_click(selfself, image_name):
         print(f"Clicked on: {image_name}")
 
-
+class ClickableImage(ButtonBehavior, Image):
+    def on_press(self):
+        print("Image Clicked!")
 
 if __name__ == "__main__":
     Photobooth().run()
