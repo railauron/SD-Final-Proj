@@ -363,15 +363,21 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-            
+    
+    FitImage:
+        source: "Shutter.png"
+        size_hint: None, None
+        size: 1000, 1000
+        pos_hint: {"center_x": 0.5, "center_y": 0.75}
+       
     MDNavigationLayout:
         ScreenManager:
             Screen:
                 MDBoxLayout:
                     orientation: 'vertical'
                     
-                    Widget: 
-                       
+                    Widget:
+                    
                     MDBoxLayout:
                         size_hint_y: None
                         height: dp(56)
@@ -383,30 +389,49 @@ ScreenManager:
                             icon: "menu"
                             theme_icon_color: "Custom"
                             icon_color: "black"
-                            on_release: nav_drawer.set_state("open")
-                         
+                            on_release: nav_drawer.set_state("toggle")  
+
+                ClickableImage:
+                    source: "set1 (2).png"
+                    size_hint: None, None
+                    size: dp(300), dp(300)
+                    pos_hint: {"center_y": 0.35, "x": 0.10}
+                
+                ClickableImage:
+                    source: "set2.png"
+                    size_hint: None, None
+                    size: dp(350), dp(350)
+                    pos_hint: {"center_y": 0.38, "x": 0.25}
+                            
+                ClickableImage:
+                    source: "set3.png"
+                    size_hint: None, None
+                    size: dp(400), dp(400)
+                    pos_hint: {"center_y": 0.42, "x": 0.40}
+                
+                ClickableImage:
+                    source: "set4.png"
+                    size_hint: None, None
+                    size: dp(350), dp(350)
+                    pos_hint: {"center_y": 0.33, "x": 0.63}
+                           
         MDNavigationDrawer:
             id: nav_drawer
             anchor: 'right'
+            md_bg_color: 146/255, 170/255, 131/255, 1
             
             BoxLayout:
                 orientation: 'vertical'
                 spacing: dp(20)
-                padding: dp(20)   
-                    
-    ClickableImage:
-        source: "set1 (2).png"
-        size_hint: None, None
-        size: dp(200), dp(200)
-        pos_hint: {"center_y": 0.5, "x": 0.15}
-        
-    ClickableImage:
-        source: "set2.png"
-        size_hint: None, None
-        size: dp(250), dp(250)
-        pos_hint: {"center_y": 0.5, "x": 0.30}
-                    
-    
+                padding: dp(20) 
+            
+            MDList:
+                OneLineListItem:
+                    text: "ACCOUNT"
+                    theme_text_color: "Custom"
+                    text_color: "black"
+                    on_release: app.show_account_screen()
+            
 <CameraPage>:
     name: 'camera'
     canvas.before:
@@ -451,9 +476,13 @@ class Photobooth(MDApp):
     def on_image_click(selfself, image_name):
         print(f"Clicked on: {image_name}")
 
+    def show_account_screen(self):
+        print("ACCOUNT clicked!")
+
 class ClickableImage(ButtonBehavior, Image):
     def on_press(self):
         print("Image Clicked!")
+
 
 if __name__ == "__main__":
     Photobooth().run()
