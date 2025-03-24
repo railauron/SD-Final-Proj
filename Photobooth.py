@@ -7,42 +7,46 @@ from kivymd.uix.fitimage import FitImage
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDTextButton
 from kivymd.uix.label import MDLabel
-from kivymd.uix.navigationdrawer import MDNavigationDrawer
+from kivymd.uix.navigationdrawer import MDNavigationDrawer, MDNavigationDrawerItem
 from kivymd.uix.button import MDIconButton
+from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.toolbar import MDTopAppBar
+from kivy.metrics import dp
+from kivy.graphics import Color, Rectangle
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.image import Image
 
 
 class ArrowButton(Button):
     pass
 
+
 class MainScreen(Screen):
     pass
+
 
 class SignIn(Screen):
     pass
 
+
 class RegisterForm(Screen):
     pass
+
 
 class LogInForm(Screen):
     pass
 
+
 class HomePage(Screen):
     pass
+
 
 class CameraPage(Screen):
     pass
 
 class AccountPage(Screen):
     pass
-
-class AboutPage(Screen):
-    pass
-
-class ContactPage(Screen):
-    pass
-
-
-
 
 KV = '''
 ScreenManager:
@@ -53,8 +57,6 @@ ScreenManager:
     HomePage:
     CameraPage:
     AccountPage:
-    AboutPage:
-    ContactPage:
     
 <ArrowButton@Button>:
     size_hint: None, None
@@ -372,151 +374,103 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-    
-    MDNavigationLayout:
-        ScreenManager:
-            Screen:
-                # Main screen content
-                RelativeLayout:  # Changed to RelativeLayout for better layering
-                    canvas.before:
-                        Rectangle:
-                            source: "background_image.jpg"  # Set your background image here
-                            size: self.size
-                            pos: self.pos
-                    
-                    BoxLayout:
-                        orientation: "vertical"           
-                        # Add other main screen content here
 
-        MDNavigationDrawer:
-            id: nav_drawer
-            anchor: 'right'  # Positions the drawer to open from the right
-            BoxLayout:
-                orientation: "vertical"
-                padding: 8
-                spacing: 8
-                canvas.before:
-                    Color:
-                        rgba: (165/255, 165/255, 141/255, 0.8)  # Semi-transparent background
-                    Rectangle:
-                        size: self.size
-                        pos: self.pos
-                
-                # Move icons (buttons) to the very top
-                BoxLayout:
-                    orientation: "vertical"
-                    size_hint_y: None
-                    height: self.minimum_height
-                    
-                    MDRaisedButton:
-                        text: "ACCOUNT"
-                        size_hint_x: 0.9
-                        pos_hint: {"center_x": 0.5}
-                        on_release: app.root.current = 'account'
-    
-
-                    MDRaisedButton:
-                        text: "ABOUT US"
-                        size_hint_x: 0.9
-                        pos_hint: {"center_x": 0.5}
-                        on_release: app.root.current = 'about'
-
-                    MDRaisedButton:
-                        text: "CONTACTS"
-                        size_hint_x: 0.9
-                        pos_hint: {"center_x": 0.5}
-                        on_release: app.root.current = 'contacts'                           
-    MDIconButton:
-        icon: "menu"  # Use an appropriate Material Design icon
-        size_hint: None, None
-        size: 48, 48
-        pos_hint: {"center_x": 0.93, "center_y": 0.95}
-        on_release: nav_drawer.set_state("open")  
-     
-    # Image 1
-    FitImage:
-        source: "set1 (2).png"
-        size_hint: None, None
-        size: 200, 200
-        pos_hint: {"center_x": 0.20, "center_y": 0.35}
-
-    MDIconButton:
-        icon: ""  # No visible icon
-        size_hint: None, None
-        size: 200, 200
-        pos_hint: {"center_x": 0.20, "center_y": 0.35}
-        on_release: app.root.current = 'camera'
-    
-    MDLabel:
-        text: "SET 1"
-        halign: "center"
-        pos_hint: {"center_x": 0.20, "center_y": 0.22}
-        text_style: "GlacialIndifference-Regular.ttf"
-        
-    # Image 2
-    FitImage:
-        source: "set2.png"
-        size_hint: None, None
-        size: 200, 300
-        pos_hint: {"center_x": 0.35, "center_y": 0.40}
-
-    MDIconButton:
-        icon: ""
-        size_hint: None, None
-        size: 200, 300
-        pos_hint: {"center_x": 0.35, "center_y": 0.40}
-        on_release: app.root.current = 'camera'
-    
-    MDLabel:
-        text: "SET 2"
-        halign: "center"
-        pos_hint: {"center_x": 0.35, "center_y": 0.22}
-        text_style: "GlacialIndifference-Regular.ttf"
-        
-    # Image 3
-    FitImage:
-        source: "set3.png"
-        size_hint: None, None
-        size: 200, 400
-        pos_hint: {"center_x": 0.52, "center_y": 0.454}
-
-    MDIconButton:
-        icon: ""
-        size_hint: None, None
-        size: 200, 400
-        pos_hint: {"center_x": 0.52, "center_y": 0.454}
-        on_release: app.root.current = 'camera'
-    
-    MDLabel:
-        text: "SET 3"
-        halign: "center"
-        pos_hint: {"center_x": 0.52, "center_y": 0.22}
-        text_style: "GlacialIndifference-Regular.ttf"
-        
-    # Image 4
-    FitImage:
-        source: "set4.png"
-        size_hint: None, None
-        size: 300, 300
-        pos_hint: {"center_x": 0.73, "center_y": 0.353}
-   
-    MDIconButton:
-        icon: ""
-        size_hint: None, None
-        size: 300, 300
-        pos_hint: {"center_x": 0.73, "center_y": 0.353}
-        on_release: app.root.current = 'camera'
-    
-    MDLabel:
-        text: "SET 4"
-        halign: "center"
-        pos_hint: {"center_x": 0.73, "center_y": 0.20}
-        text_style: "GlacialIndifference-Regular.ttf"
     FitImage:
         source: "Shutter.png"
         size_hint: None, None
-        size: 600, 600
-        pos_hint: {"center_x": 0.5, "center_y": 0.80}    
+        size: 1000, 1000
+        pos_hint: {"center_x": 0.5, "center_y": 0.75}
+
+    MDNavigationLayout:
+        ScreenManager:
+            Screen:
+                MDBoxLayout:
+                    orientation: 'vertical'
+
+                    Widget:
+
+                    MDBoxLayout:
+                        size_hint_y: None
+                        height: dp(56)
+                        padding: dp(10)
+                        pos_hint: {"top": 1, "right": 1}  
+                        spacing: dp(10) 
+
+                        MDIconButton:
+                            icon: "menu"
+                            theme_icon_color: "Custom"
+                            icon_color: "black"
+                            on_release: nav_drawer.set_state("toggle")  
+
+                ClickableImage:
+                    source: "set1 (2).png"
+                    size_hint: None, None
+                    size: dp(300), dp(300)
+                    pos_hint: {"center_y": 0.35, "x": 0.10}
+                    on_release: app.root.current = 'camera'
+                
+                MDLabel:
+                    text: "SET 1"
+                    halign: "center"
+                    pos_hint: {"center_x": 0.20, "center_y": 0.15}
+                    text_style: "GlacialIndifference-Regular.ttf"
+                         
+                             
+                ClickableImage:
+                    source: "set2.png"
+                    size_hint: None, None
+                    size: dp(350), dp(350)
+                    pos_hint: {"center_y": 0.38, "x": 0.25}
+                    on_release: app.root.current = 'camera'
+                
+                MDLabel:
+                    text: "SET 2"
+                    halign: "center"
+                    pos_hint: {"center_x": 0.36, "center_y": 0.15}
+                    text_style: "GlacialIndifference-Regular.ttf"
+                    
+                ClickableImage:
+                    source: "set3.png"
+                    size_hint: None, None
+                    size: dp(400), dp(400)
+                    pos_hint: {"center_y": 0.42, "x": 0.40}
+                    on_release: app.root.current = 'camera'
+                    
+                MDLabel:
+                    text: "SET 3"
+                    halign: "center"
+                    pos_hint: {"center_x": 0.52, "center_y": 0.15}
+                    text_style: "GlacialIndifference-Regular.ttf"
+
+                ClickableImage:
+                    source: "set4.png"
+                    size_hint: None, None
+                    size: dp(350), dp(350)
+                    pos_hint: {"center_y": 0.33, "x": 0.62}
+                    on_release: app.root.current = 'camera'
+                
+                MDLabel:
+                    text: "SET 4"
+                    halign: "center"
+                    pos_hint: {"center_x": 0.73, "center_y": 0.15}
+                    text_style: "GlacialIndifference-Regular.ttf"
+
+        MDNavigationDrawer:
+            id: nav_drawer
+            anchor: 'right'
+            md_bg_color: 146/255, 170/255, 131/255, 1
+
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: dp(20)
+                padding: dp(20) 
+
+            MDList:
+                OneLineListItem:
+                    text: "ACCOUNT"
+                    theme_text_color: "Custom"
+                    text_color: "black"
+                    on_release: app.root.current = 'account'
 
 <CameraPage>:
     name: 'camera'
@@ -535,53 +489,52 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-
-    FloatLayout:  # Using FloatLayout to position elements freely on the screen
-        # Top Section for Profile Details
-        BoxLayout:
-            orientation: 'horizontal'
-            size_hint: 1, None  # Full width, custom height
-            height: "120dp"  # Adjust height for profile section
-            pos_hint: {"top": 1}  # Align at the top of the screen
-            padding: [16, 16, 16, 16]
-            spacing: 10
-
-            # Profile Info Section
-            BoxLayout:
-                orientation: 'vertical'
-                spacing: 5
-                size_hint_x: 0.8  # Takes up most of the width
-
-                MDIconButton:
-                    icon: "account"
-                    size_hint: None, None
-                    size: "1000dp", "48dp"  # Correct size for the icon
-                    pos_hint: {"x": 0, "top": 1}  # Upper left corner
     
-<AboutPage>:
-    name: 'account'
-    canvas.before:
-        Color:
-            rgba: (240/255, 246/255, 237/255, 1)
-        Rectangle:
-            size: self.size
-            pos: self.pos
-    
-    FitImage:
-        source: "Profile.png"
-        size_hint: None, None
-        size: 2000,2000
-        pos_hint: {"center_x": 1, "center_y": 0.9}  
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: 120
+        padding: 20
+        spacing: 15
         
-                
-<ContactPage>:
-    name: 'account'
-    canvas.before:
-        Color:
-            rgba: (240/255, 246/255, 237/255, 1)
-        Rectangle:
-            size: self.size
-            pos: self.pos    
+        Image:
+            source: 'Profile.png'
+            size_hint: None, None
+            size: 60, 60
+        
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 60
+            
+            Label:
+                text: "FULL NAME"
+                bold: True
+                font_size: 18
+                color: 0, 0, 0, 1
+                size_hint_y: None
+                height: 25
+            
+            Label:
+                text: "@USERNAME"
+                font_size: 14
+                color: 0, 0, 0.5, 1
+                size_hint_y: None
+                height: 20
+    
+    Label:
+        text: "PHOTOS"
+        font_size: 14
+        bold: True
+        size_hint_y: None
+        height: 30
+        pos_hint: {'x': 0, 'bottom': 1}
+    
+    Button:
+        text: "←"
+        size_hint: None, None
+        size: 40, 40
+        pos_hint: {'right': 1, 'top': 1}
 '''
 
 
@@ -616,6 +569,13 @@ class Photobooth(MDApp):
     def on_image_click(selfself, image_name):
         print(f"Clicked on: {image_name}")
 
+    def show_account_screen(self):
+        print("ACCOUNT clicked!")
+
+
+class ClickableImage(ButtonBehavior, Image):
+    def on_press(self):
+        print("Image Clicked!")
 
 
 if __name__ == "__main__":
