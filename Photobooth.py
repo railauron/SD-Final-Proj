@@ -48,6 +48,9 @@ class CameraPage(Screen):
 class AccountPage(Screen):
     pass
 
+class AboutPage(Screen):
+    pass
+
 KV = '''
 ScreenManager:
     MainScreen:
@@ -57,6 +60,7 @@ ScreenManager:
     HomePage:
     CameraPage:
     AccountPage:
+    AboutPage:
     
 <ArrowButton@Button>:
     size_hint: None, None
@@ -471,6 +475,14 @@ ScreenManager:
                     theme_text_color: "Custom"
                     text_color: "black"
                     on_release: app.root.current = 'account'
+                    
+                    
+            MDList:
+                OneLineListItem:
+                    text: "ABOUT"
+                    theme_text_color: "Custom"
+                    text_color: "black"
+                    on_release: app.root.current = 'about'        
 
 <CameraPage>:
     name: 'camera'
@@ -501,21 +513,23 @@ ScreenManager:
             source: 'Profile.png'
             size_hint: None, None
             size: 60, 60
-        
+            pos_hint: {"y": 11, "x": 3}
+            
         BoxLayout:
             orientation: 'vertical'
             size_hint_y: None
             height: 60
             
-            Label:
+            MDLabel:
                 text: "FULL NAME"
                 bold: True
                 font_size: 18
                 color: 0, 0, 0, 1
                 size_hint_y: None
                 height: 25
+                pos_hint: {"center_x": 1, "center_y": 3}
             
-            Label:
+            MDLabel:
                 text: "@USERNAME"
                 font_size: 14
                 color: 0, 0, 0.5, 1
@@ -529,12 +543,43 @@ ScreenManager:
         size_hint_y: None
         height: 30
         pos_hint: {'x': 0, 'bottom': 1}
+
+<AboutPage>:
+    name: 'about'
+    canvas.before:
+        Color:
+            rgba: (240/255, 246/255, 237/255, 1)  # Light green background
+        Rectangle:
+            size: self.size
+            pos: self.pos  
     
-    Button:
-        text: "←"
-        size_hint: None, None
-        size: 40, 40
-        pos_hint: {'right': 1, 'top': 1}
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: 120
+        padding: 20
+        spacing: 15
+        
+        Image:
+            source: 'About.png'
+            size_hint: None, None
+            size: 80, 80
+            pos_hint: {"center_y": 11, "x": 3}
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 60
+            
+            Label:
+                text: "ABOUT US"
+                bold: True
+                font_size: 18
+                color: 0, 0, 0, 1
+                size_hint_y: None
+                height: 25        
+                pos_hint: {"center_y": 5, "x": 0.0002}
+            
+              
 '''
 
 
