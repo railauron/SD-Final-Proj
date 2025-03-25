@@ -565,19 +565,16 @@ ScreenManager:
             size_hint: None, None
             size: 80, 80
             pos_hint: {"center_y": 11, "x": 3}
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint_y: None
-            height: 60
-            
-            Label:
+        
+    
+            MDLabel:
                 text: "ABOUT US"
                 bold: True
                 font_size: 18
                 color: 0, 0, 0, 1
                 size_hint_y: None
                 height: 25        
-                pos_hint: {"center_y": 5, "x": 0.0002}
+                pos_hint: {"center_y": .5, "center_x": 0.2}
             
               
 '''
