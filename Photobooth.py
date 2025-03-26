@@ -515,34 +515,34 @@ ScreenManager:
             size: 60, 60
             pos_hint: {"y": 11, "x": 3}
             
-        BoxLayout:
+        FloatLayout:
             orientation: 'vertical'
             size_hint_y: None
             height: 60
             
-            MDLabel:
+            Label:
                 text: "FULL NAME"
                 bold: True
                 font_size: 18
                 color: 0, 0, 0, 1
-                size_hint_y: None
                 height: 25
-                pos_hint: {"center_x": 1, "center_y": 3}
+                pos_hint: {"center_x": 0.02, "center_y": 15.1}
             
-            MDLabel:
+            Label:
                 text: "@USERNAME"
                 font_size: 14
                 color: 0, 0, 0.5, 1
-                size_hint_y: None
                 height: 20
-    
-    Label:
-        text: "PHOTOS"
-        font_size: 14
-        bold: True
-        size_hint_y: None
-        height: 30
-        pos_hint: {'x': 0, 'bottom': 1}
+                pos_hint: {"center_x": 0.02, "center_y": 14.8}
+            
+            Label:
+                text: "PHOTOS"
+                font_size: 14
+                bold: True
+                size_hint_y: None
+                height: 30
+                color: 0, 0, 0.5, 1
+                pos_hint: {"center_x": 0.01, "center_y": 12.8}
 
 <AboutPage>:
     name: 'about'
@@ -559,22 +559,26 @@ ScreenManager:
         height: 120
         padding: 20
         spacing: 15
-        
+            
         Image:
             source: 'About.png'
             size_hint: None, None
             size: 80, 80
-            pos_hint: {"center_y": 11, "x": 3}
-        
-    
-            MDLabel:
+            pos_hint: {"y": 11, "x": 3}
+                
+        FloatLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 60
+            
+            Label:
                 text: "ABOUT US"
                 bold: True
                 font_size: 18
                 color: 0, 0, 0, 1
                 size_hint_y: None
-                height: 25        
-                pos_hint: {"center_y": .5, "center_x": 0.2}
+                height: 30       
+                pos_hint: {"center_x": 0.02, "center_y": 15.1}
             
               
 '''
