@@ -1,3 +1,6 @@
+import mysql.connector
+import cv2
+from mysql.connector import Error
 from kivy.lang import Builder
 from kivymd.app import MDApp
 from kivy.core.window import Window
@@ -16,27 +19,38 @@ from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.image import Image
+from kivy.uix.camera import Camera
+from kivy.clock import Clock
+from kivy.graphics.texture import Texture
+
 
 class ArrowButton(Button):
     pass
 
+
 class MainScreen(Screen):
     pass
+
 
 class SignIn(Screen):
     pass
 
+
 class RegisterForm(Screen):
     pass
+
 
 class LogInForm(Screen):
     pass
 
+
 class HomePage(Screen):
     pass
 
+
 class CameraPage(Screen):
     pass
+
 
 KV = '''
 ScreenManager:
@@ -363,28 +377,28 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-    
+
     FitImage:
         source: "Shutter.png"
         size_hint: None, None
         size: 1000, 1000
         pos_hint: {"center_x": 0.5, "center_y": 0.75}
-       
+
     MDNavigationLayout:
         ScreenManager:
             Screen:
                 MDBoxLayout:
                     orientation: 'vertical'
-                    
+
                     Widget:
-                    
+
                     MDBoxLayout:
                         size_hint_y: None
                         height: dp(56)
                         padding: dp(10)
                         pos_hint: {"top": 1, "right": 1}  
                         spacing: dp(10) 
-                        
+
                         MDIconButton:
                             icon: "menu"
                             theme_icon_color: "Custom"
@@ -396,54 +410,177 @@ ScreenManager:
                     size_hint: None, None
                     size: dp(300), dp(300)
                     pos_hint: {"center_y": 0.35, "x": 0.10}
-                
+                    on_release: app.root.current = 'camera'
+
                 ClickableImage:
                     source: "set2.png"
                     size_hint: None, None
                     size: dp(350), dp(350)
                     pos_hint: {"center_y": 0.38, "x": 0.25}
-                            
+                    on_release: app.root.current = 'camera'
+
                 ClickableImage:
                     source: "set3.png"
                     size_hint: None, None
                     size: dp(400), dp(400)
                     pos_hint: {"center_y": 0.42, "x": 0.40}
-                
+                    on_release: app.root.current = 'camera'
+
                 ClickableImage:
                     source: "set4.png"
                     size_hint: None, None
                     size: dp(350), dp(350)
                     pos_hint: {"center_y": 0.33, "x": 0.63}
-                           
+                    on_release: app.root.current = 'camera'
+                    
+
         MDNavigationDrawer:
             id: nav_drawer
             anchor: 'right'
             md_bg_color: 146/255, 170/255, 131/255, 1
-            
+
             BoxLayout:
                 orientation: 'vertical'
-                spacing: dp(20)
+                spacing: dp(10)
                 padding: dp(20) 
-            
-            MDList:
-                OneLineListItem:
+                
+                Widget:
+                    size_hint_y: None
+                    height: dp(100)
+                
+                MDLabel:
                     text: "ACCOUNT"
-                    theme_text_color: "Custom"
+                    theme_text_color: "Hint"
                     text_color: "black"
-                    on_release: app.show_account_screen()
+                    font_style: "H6"
+                    halign: "right"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    on_touch_down: app.show_account_screen() if self.collide_point(*args[1].pos) else None
+                
+                Widget:
+                    size_hint_y: None
+                    height: dp(10)
+                
+                MDLabel: 
+                    text: "ABOUT US"
+                    theme_text_color: "Hint"
+                    text_color: "black"
+                    font_style: "H6"
+                    halign: "right"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    on_touch_down: app.show_about_screen() if self.collide_point(*args[1].pos) else None
+                
+                Widget:
+                    size_hint_y: None
+                    height: dp(10)
+                
+                MDLabel:
+                    text: "CONTACTS"
+                    theme_text_color: "Hint"
+                    text_color: "black"
+                    font_style: "H6"
+                    halign: "right"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    on_touch_down: app.show_contacts_screen() if self.collide_point(*args[1].pos) else None
             
 <CameraPage>:
     name: 'camera'
     canvas.before:
         Color:
             rgba: (240/255, 246/255, 237/255, 1)
-        Rectangle:
+        Rectangle: 
             size: self.size
-            pos: self.pos   
-
-
+            pos: self.pos
+            
+    BoxLayout:
+        orientation: 'horizontal'
+        padding: dp(40)
+        spacing: dp(30)
+        
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: dp(10)
+            size_hint: (0.7, 1)
+            
+            Camera:
+                id: cam
+                resolution: (640, 480)
+                play: True
+                allow_stretch: True
+                keep_ratio: True
+                
+            MDRaisedButton:
+                text: "Take a Photo"
+                size_hint: None, None
+                size: dp(150), dp(50)
+                pos_hint: {"center_x": 0.5}
+                on_release: app.capture()
+                
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: dp(10)
+            size_hint: (0.3, 1)
+            
+            Label:
+                text: "DISPLAY PHOTO 1"
+                size_hint_y: None
+                height: dp(200)
+                color: (0, 0, 0, 1)
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                
+            Image: 
+                id: photo1
+                source: ''
+                size_hint_y: None
+                height: dp(200)
+                allow_stretch: True
+                keep_ratio: True
+                
+            Label: 
+                text: "DISPLAY PHOTO 2"
+                size_hint_y: None
+                height: dp(200)
+                color: (0, 0, 0, 1)
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                
+            Image: 
+                id: photo2
+                source: ''
+                size_hint_y: None
+                height: dp(200)
+                allow_stretch: True
+                keep_ratio: True
+                
+            MDRaisedButton:
+                text: "Confirm"
+                size_hint: None, None
+                size: dp(120), dp(40)
+                pos_hint: {"center_x": 0.5}
+                on_release: app.confirm()
 '''
 
+try:
+    connection = mysql.connector.connect(
+        host = "localhost",
+        user = "root",
+        password = "",
+        database = "testdb"
+    )
+    if connection.is_connected():
+        print("Connected to localhost MySQL server!")
+except Error as e:
+    print("Failed to connect:", e)
+finally:
+    if 'connection' in locals() and connection.is_connected():
+        connection.close()
+        print("Connection closed.")
 
 class Photobooth(MDApp):
     def build(self):
@@ -479,9 +616,48 @@ class Photobooth(MDApp):
     def show_account_screen(self):
         print("ACCOUNT clicked!")
 
+    def connect_and_insert(self):
+        mydb = mysql.connector.connect(
+            host = "localhost",
+            user = "root",
+            password = "",
+            database = "testdb"
+        )
+
+        cursor = mydb.cursor()
+
+        sql = "INSERT INTO users (name, username, password) VALUES (%s, %s)"
+        val = ("John Angelo Evangelista, John Doe", "qwerty1234")
+        cursor.execute(sql, val)
+
+        mydb.commit()
+        print(cursor.rowcount, "record inserted.")
+
+        cursor.executed("SELECT * FROM users")
+        for row in cursor.fetchall():
+            print(row)
+
+        cursor.close()
+        mydb.close()
+
 class ClickableImage(ButtonBehavior, Image):
     def on_press(self):
         print("Image Clicked!")
+
+class CameraWidget(Image):
+    def __init__(self, **kwargs):
+        super(CameraWidget, self).__init__(**kwargs)
+        self.capture = cv2.VideoCapture(0)
+        Clock.schedule_interval(self.update, 1.0/30.0)
+
+    def update(self, dt):
+        ret, frame = self.capture.read()
+        if ret:
+            frame = cv2.flip(frame, 0)
+            buf = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB).tobytes()
+            texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt = 'rgb')
+            texture.blit_buffer(buf, colorfmt = 'rgb', bufferfmt = 'ubyte')
+            self.texture = texture
 
 
 if __name__ == "__main__":
