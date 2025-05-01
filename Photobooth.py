@@ -763,46 +763,58 @@ ScreenManager:
     name: 'design'
     canvas.before:
         Color:
-            rgba: (240/255, 246/255, 237/255, 1)
+            rgba: (240/255, 246/255, 237/255, 1)  # Background color
         Rectangle:
             size: self.size
             pos: self.pos
-    
+
     BoxLayout:
         orientation: 'vertical'
-        spacing: dp(10)
-        padding: [dp(20), dp(20), dp(20), dp(20)]
-        
+        spacing: dp(0)
+        padding: [dp(10), dp(0), dp(10), dp(0)]  # Adjust to minimize unnecessary gaps
+
+        # Black BoxLayout for Images
         BoxLayout:
             orientation: 'vertical'
             size_hint: None, None
-            width: dp(600)
-            height: dp(600)
-            spacing: dp(10)
-            padding: dp(20)
+            width: dp(200)
+            height: dp(450)
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
             canvas.before:
                 Color:
-                    rgba: (0, 0, 0, 1)
-                Rectangle: 
+                    rgba: (0, 0, 0, 1)  # Black background
+                Rectangle:
                     size: self.size
                     pos: self.pos
+
+            # Image 1 - Positioned upward
+            FloatLayout:
+                size_hint: None, None
+                width: dp(200)
+                height: dp(250)  # Contain the upper image specifically
+
+                Image:
+                    id: photo1
+                    size_hint: None, None
+                    size: dp(180), dp(150)
+                    allow_stretch: True
+                    keep_ratio: True
+                    pos_hint: {"center_x": 0.5, "top": 1.0}  # Push to the top of FloatLayout
+
+            # Image 2 - Positioned immediately below
+            FloatLayout:
+                size_hint: None, None
+                width: dp(200)
+                height: dp(200)  # Contain the lower image specifically
+
+                Image:
+                    id: photo2
+                    size_hint: None, None
+                    size: dp(180), dp(150)
+                    allow_stretch: True
+                    keep_ratio: True
+                    pos_hint: {"center_x": 0.5, "top": 1.0}  # Push to the top of FloatLayout
                     
-            Image:
-                id: photo1
-                size_hint: None, None
-                size: dp(300), dp(200)
-                allow_stretch: True
-                keep_ratio: True
-                
-            Image:
-                id: photo2
-                size_hint: None, None
-                size: dp(300), dp(200)
-                allow_stretch: True
-                keep_ratio: True
-                
-        
-    
 '''
 
 
