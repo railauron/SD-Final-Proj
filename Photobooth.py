@@ -30,6 +30,11 @@ import firebase_admin
 from firebase_admin import credentials, db
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
+from shutil import copyfile
+import time
+from kivy.uix.image import Image as CoreImage
+from kivy.uix.textinput import TextInput
+
 
 KV = '''
 ScreenManager:
@@ -39,6 +44,7 @@ ScreenManager:
     LogInForm:
     HomePage:
     CameraPage:
+    DesignPage:
 
 <ArrowButton@Button>:
     size_hint: None, None
@@ -383,7 +389,7 @@ ScreenManager:
                         padding: dp(10)
                         pos_hint: {"top": 1, "right": 1}  
                         spacing: dp(10)
-                        
+
                         MDIconButton:
                             icon: "menu"
                             theme_icon_color: "Custom"
@@ -397,34 +403,34 @@ ScreenManager:
                     size: dp(300), dp(300)
                     pos_hint: {"center_y": 0.35, "x": 0.10}
                     on_release: app.root.current = 'camera'
-                
+
                 MDLabel:
                     text: "SET 1"
                     halign: "center"
                     pos_hint: {"center_x": 0.20, "center_y": 0.15}
                     text_style: "GlacialIndifference-Regular.ttf"
-                         
-                             
+
+
                 ClickableImage:
                     source: "set2.png"
                     size_hint: None, None
                     size: dp(350), dp(350)
                     pos_hint: {"center_y": 0.38, "x": 0.25}
                     on_release: app.root.current = 'camera'
-                
+
                 MDLabel:
                     text: "SET 2"
                     halign: "center"
                     pos_hint: {"center_x": 0.36, "center_y": 0.15}
                     text_style: "GlacialIndifference-Regular.ttf"
-                    
+
                 ClickableImage:
                     source: "set3.png"
                     size_hint: None, None
                     size: dp(400), dp(400)
                     pos_hint: {"center_y": 0.42, "x": 0.40}
                     on_release: app.root.current = 'camera'
-                    
+
                 MDLabel:
                     text: "SET 3"
                     halign: "center"
@@ -437,18 +443,18 @@ ScreenManager:
                     size: dp(350), dp(350)
                     pos_hint: {"center_y": 0.33, "x": 0.62}
                     on_release: app.root.current = 'camera'
-                
+
                 MDLabel:
                     text: "SET 4"
                     halign: "center"
                     pos_hint: {"center_x": 0.73, "center_y": 0.15}
                     text_style: "GlacialIndifference-Regular.ttf"
-                     
+
         MDNavigationDrawer:
             id: nav_drawer
             anchor: 'right'
             md_bg_color: 146/255, 170/255, 131/255, 1
-        
+
             MDList:
                 OneLineListItem:
                     text: "ACCOUNT"
@@ -457,7 +463,7 @@ ScreenManager:
                     pos_hint: {"top": 15}
                     size_hint_y: None
                     on_release: app.root.current = 'account'    
-                
+
                 MDList:
                     OneLineListItem:
                         text: "ABOUT"
@@ -466,7 +472,7 @@ ScreenManager:
                         pos_hint: {"top": 3}
                         size_hint_y: None
                         on_release: app.root.current = 'about'      
-                    
+
                     MDList:
                         OneLineListItem:
                             text: "CONTACT"
@@ -475,17 +481,7 @@ ScreenManager:
                             pos_hint: {"top": 3}
                             size_hint_y: None
                             on_release: app.root.current = 'contact'            
-                                       
 
-<CameraPage>:
-    name: 'camera'
-    canvas.before:
-        Color:
-            rgba: (240/255, 246/255, 237/255, 1)
-        Rectangle:
-            size: self.size
-            pos: self.pos   
-            
 <AccountPage>:
     name: 'account'
     canvas.before:
@@ -494,7 +490,7 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-    
+
     MDIconButton:
         icon: "arrow-left"
         theme_text_color: "Custom"
@@ -503,25 +499,25 @@ ScreenManager:
         size: dp(50), dp(50)
         pos_hint: {"x": 0.95, "top": 0.98}
         on_release: app.root.current = 'home'
-    
+
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
         height: 120
         padding: 20
         spacing: 15
-        
+
         Image:
             source: 'Profile.png'
             size_hint: None, None
             size: 60, 60
             pos_hint: {"y": 11, "x": 3}
-            
+
         FloatLayout:
             orientation: 'vertical'
             size_hint_y: None
             height: 60
-            
+
             Label:
                 text: "FULL NAME"
                 bold: True
@@ -529,14 +525,14 @@ ScreenManager:
                 color: 0, 0, 0, 1
                 height: 25
                 pos_hint: {"center_x": 0.02, "center_y": 15.1}
-            
+
             Label:
                 text: "@USERNAME"
                 font_size: 14
                 color: 0, 0, 0.5, 1
                 height: 20
                 pos_hint: {"center_x": 0.02, "center_y": 14.8}
-            
+
             Label:
                 text: "PHOTOS"
                 font_size: 14
@@ -554,7 +550,7 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos  
-    
+
     MDIconButton:
         icon: "arrow-left"
         theme_text_color: "Custom"
@@ -563,25 +559,25 @@ ScreenManager:
         size: dp(50), dp(50)
         pos_hint: {"x": 0.95, "top": 0.98}
         on_release: app.root.current = 'home'
-          
+
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
         height: 120
         padding: 20
         spacing: 15 
-        
+
         Image:
             source: 'About.png'
             size_hint: None, None
             size: 60, 60
             pos_hint: {"y": 10.8, "x": 3}               
-    
+
     FloatLayout:
         orientation: 'vertical'
         size_hint_y: None
         height: 60
-        
+
         Label:
             text: "ABOUT US"
             bold: True
@@ -590,7 +586,7 @@ ScreenManager:
             size_hint_y: None
             height: 30       
             pos_hint: {"center_x": 0.08, "center_y": 15.2}
-            
+
         Label:
             text: """ShutterBooth is dedicated to bringing people together through fun, creative, and high-quality photo booth experiences.Our app is designed to make capturing memories effortless and enjoyable, whether at events, gatherings, or just everyday moments. With customizable features, instant sharing options,and a user-friendly interface, we empower users to express themselves and preserve special occasions in a unique way. At ShutterBooth, we believe every snapshot tells a story—let’s create yours together! """
             bold: True
@@ -599,7 +595,7 @@ ScreenManager:
             size_hint_y: None
             height: 30       
             pos_hint: {"center_x": 0.08, "center_y": 15.2}
-                   
+
 <ContactPage>:
     name: 'contact'
     canvas.before:
@@ -608,7 +604,7 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos  
-    
+
     MDIconButton:
         icon: "arrow-left"
         theme_text_color: "Custom"
@@ -617,20 +613,20 @@ ScreenManager:
         size: dp(50), dp(50)
         pos_hint: {"x": 0.95, "top": 0.98}
         on_release: app.root.current = 'home'
-        
+
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
         height: 120
         padding: 20
         spacing: 15      
-    
-          
+
+
     FloatLayout:
         orientation: 'vertical' 
         size_hint_y: None
         height: 60
-                  
+
         Label:
             text: "CONTACTS"
             bold: True
@@ -638,13 +634,13 @@ ScreenManager:
             color: 0, 0, 0, 1
             height: 40   
             pos_hint: {"center_x": 0.05, "center_y": 15.0}      
-        
+
         Image:
             source: 'Email.png'
             size_hint: None, None
             size: 40, 40
             pos_hint: {"y": 14.0, "x": 0.02}
-            
+
         Label:
             text: "shutterboothofficial@gmail.com"
             bold: True
@@ -652,13 +648,13 @@ ScreenManager:
             color: 0, 0, 0, 1
             height: 40   
             pos_hint: {"center_x": 0.10, "center_y": 14.3}   
-            
+
         Image:
             source: 'Facebook.png'
             size_hint: None, None
             size: 40, 40
             pos_hint: {"y": 13.2, "x": 0.02}  
-            
+
         Label:
             text: "Shutter Booth Official"
             bold: True
@@ -666,13 +662,13 @@ ScreenManager:
             color: 0, 0, 0, 1
             height: 40   
             pos_hint: {"center_x": 0.08, "center_y": 13.5}  
-            
+
         Image:
             source: 'Contact.png'
             size_hint: None, None
             size: 40, 40
             pos_hint: {"y": 12.3, "x": 0.02}  
-            
+
         Label:
             text: "(08)- 2025 -1709"
             bold: True
@@ -704,89 +700,44 @@ ScreenManager:
                 id: cam
                 resolution: (640, 480)
                 play: True
+                size_hint_x: 0.7
                 allow_stretch: True
-                keep_ratio: True
-                size_hint: (0.6, 0.6)
+                on_texture: root.on_texture(self, self.texture)
 
             MDRoundFlatButton:
                 text: "Take a Photo"
-                size_hint: 0.1, None
-                height: dp(48)
-                pos_hint: {"center_x": 0.5, "center_y": 0.15}
-                halign: "center"
-                font_size: 12
+                size_hint: None, None
+                width: dp(200)
+                height: dp(60)
+                pos_hint: {"center_x": 0.3, "center_y": 0.15}
+                font_size: "16sp"
                 font_style: "Caption"
                 text_style: "GlacialIndifference-Regular.ttf"
                 text_color: 0, 0, 0, 1
                 md_bg_color: 0.867, 0.894, 0.882, 1
                 line_color: 0, 0, 0, 1
                 radius: [24, 24, 24, 24]
-                on_release: root.capture()
-
+                on_release: app.take_photo()
+                
         BoxLayout:
-            orientation: 'horizontal'
-            size_hint: None, None
-            size: dp(240), dp(420)  
-            pos: root.width - dp(240), dp(0)  
+            orientation: 'vertical'
+            size_hint_x: None
+            width: dp(600)  # Wider space for photos
+            padding: dp(55)
+            spacing: dp(45)
 
-            BoxLayout:
-                orientation: 'vertical'
-                size_hint: None, None
-                size: dp(180), dp(420)
-                spacing: dp(10)
-        
-                canvas.before:
-                    Color:
-                        rgba: 0, 0, 0, 1
-                    Rectangle:
-                        size: self.size
-                        pos: self.pos
-
-                BoxLayout:
-                    size_hint: None, None
-                    size: dp(160), dp(200)
-                    padding: dp(5)
-                    pos_hint: {'center_x': 0.5}
-
-                    canvas.before:
-                        Color: 
-                            rgba: 1, 1, 1, 1
-                        Rectangle:
-                            size: self.size
-                            pos: self.pos
-
-                    Image:
-                        id: photo1
-                        source: root.photo1_source
-                        allow_stretch: True
-                        keep_ratio: False
-                        size_hint: 1, 1
-
-                BoxLayout:
-                    size_hint: None, None
-                    size: dp(160), dp(200)
-                    padding: dp(5)
-                    pos_hint: {'center_x': 0.5}
-
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1
-                        Rectangle:
-                            size: self.size
-                            pos: self.pos
-
-                    Image:
-                        id: photo2
-                        source: root.photo2_source
-                        allow_stretch: True
-                        keep_ratio: False
-                        size_hint: 1, 1
+            MDStackLayout:
+                id: photo_list
+                orientation: 'lr-tb'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(0)  # Reduced spacing between the photos
 
     MDRoundFlatButton:
         text: "Confirm"
         size_hint: 0.1, None
         height: dp(48)
-        pos_hint: {"center_x": 0.5, "center_y": 0.15}
+        pos_hint: {"center_x": 0.7, "center_y": 0.07}
         halign: "center"
         font_size: 12
         font_style: "Caption"
@@ -795,8 +746,8 @@ ScreenManager:
         md_bg_color: 0.867, 0.894, 0.882, 1
         line_color: 0, 0, 0, 1
         radius: [24, 24, 24, 24]
-        on_release: root.confirm()
-        
+        on_release: app.root.current = 'design'
+
     MDIconButton:
         icon: "arrow-left"
         theme_text_color: "Custom"
@@ -804,9 +755,57 @@ ScreenManager:
         size_hint: None, None
         size: dp(50), dp(50)
         pos_hint: {"x": 0.1, "top": 0.95}
-        on_release: app.root.current = 'home'
-
+        on_release: 
+            app.root.current = 'home'
+            app.root.current = 'design'
+            
+<DesignPage>:
+    name: 'design'
+    canvas.before:
+        Color:
+            rgba: (240/255, 246/255, 237/255, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: [dp(20), dp(20), dp(20), dp(20)]
+        
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: None, None
+            width: dp(600)
+            height: dp(600)
+            spacing: dp(10)
+            padding: dp(20)
+            canvas.before:
+                Color:
+                    rgba: (0, 0, 0, 1)
+                Rectangle: 
+                    size: self.size
+                    pos: self.pos
+                    
+            Image:
+                id: photo1
+                size_hint: None, None
+                size: dp(300), dp(200)
+                allow_stretch: True
+                keep_ratio: True
+                
+            Image:
+                id: photo2
+                size_hint: None, None
+                size: dp(300), dp(200)
+                allow_stretch: True
+                keep_ratio: True
+                
+        
+    
 '''
+
+
 class ArrowButton(Button):
     pass
 
@@ -846,34 +845,90 @@ class RegisterForm(Screen):
     def show_error_dialog(self, message):
         if not self.dialog:
             self.dialog = MDDialog(
-                type = "custom",
-                content_cls = MDLabel(
-                    text = "Registration Error",
-                    halign = "center",
-                    font_name = "GlacialIndifference-Regular.ttf",
-                    font_size = "16sp",
-                    theme_text_color = "Custom",
-                    text_color = (0, 0, 0, 1),
+                type="custom",
+                content_cls=MDLabel(
+                    text="Registration Error",
+                    halign="center",
+                    font_name="GlacialIndifference-Regular.ttf",
+                    font_size="16sp",
+                    theme_text_color="Custom",
+                    text_color=(0, 0, 0, 1),
                 ),
-                    size_hint = (0.2, None),
-                    radius = [20, 20, 20, 20],
-                    height = dp(150),
-                    buttons = [
-                        MDFlatButton(
-                            text = "OK",
-                            font_name = "GlacialIndifference-Regular.ttf",
-                            text_color = (0, 0, 0, 1),
-                            on_release = lambda x: self.dialog.dismiss()
+                size_hint=(0.2, None),
+                radius=[20, 20, 20, 20],
+                height=dp(150),
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        font_name="GlacialIndifference-Regular.ttf",
+                        text_color=(0, 0, 0, 1),
+                        on_release=lambda x: self.dialog.dismiss()
                     ),
                 ],
             )
         self.dialog.text = message
         self.dialog.open()
 
+    def show_error_dialog(self, message):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                type="custom",
+                content_cls=MDLabel(
+                    text="Please fill in the field!",
+                    halign="center",
+                    font_name="GlacialIndifference-Regular.ttf",
+                    font_size="16sp",
+                    theme_text_color="Custom",
+                    text_color=(0, 0, 0, 1),
+                ),
+                size_hint=(0.2, None),
+                radius=[20, 20, 20, 20],
+                height=dp(150),
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        font_name="GlacialIndifference-Regular.ttf",
+                        text_color=(0, 0, 0, 1),
+                        on_release=lambda x: self.dialog.dismiss()
+                    ),
+                ],
+            )
+        else:
+            self.dialog.content_cls.text = message
+        self.dialog.open()
+
+    def check_register(self):
+        fullname = self.ids.register_fullname.text
+        username = self.ids.register_username.text
+        password = self.ids.register_password.text
+
+        if not fullname:
+            self.show_error_dialog("Please fill in the field!")
+        else:
+            self.register_user(fullname, username, password)
+
+
 class LogInForm(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.dialog = None
+
+    def build(self):
+        self.theme_cls.primary_palette = "Black"
+        self.text_field = MDTextField(
+            hint_text="Username",
+            size_hint_x=None,
+            width=300,
+            pos_hint={"center_x": 0.5, "center_y": 0.5}
+        )
+        self.text_field.bind(focus=self.on_focus)
+        return self.text_field
+
+    def on_focus(self, instance, value):
+        if value:
+            instance.foreground_color = [0, 0, 0, 1]
+        else:
+            instance.foreground_color = [0, 0, 1, 1]
 
     def show_error_dialog(self, message):
         if not self.dialog:
@@ -923,17 +978,22 @@ class LogInForm(Screen):
         else:
             self.show_error_dialog("Username not found. Please check your username.")  # <<< NO self.root
 
+
 class HomePage(Screen):
     pass
+
 
 class AccountPage(Screen):
     pass
 
+
 class AboutPage(Screen):
     pass
 
+
 class ContactPage(Screen):
     pass
+
 
 class CameraPage(Screen):
     photo1_source = StringProperty('')
@@ -942,6 +1002,9 @@ class CameraPage(Screen):
 
     def crop_image_to_box(self, filename, target_width=160, target_height=200):
         img = PILImage.open(filename)
+        img = img.resize((800, 1000), PILImage.LANCZOS)
+
+        img.save(filename)
         img_width, img_height = img.size
         target_ratio = target_width / target_height
         current_ratio = img_width / img_height
@@ -955,16 +1018,14 @@ class CameraPage(Screen):
             top = (img_height - new_height) // 2
             box = (0, top, img_width, top + new_height)
 
-        cropped = img.crop(box)
-        cropped = cropped.resize((target_width, target_height), PILImage.LANCZOS)
-        cropped.save(filename)
-
     def capture(self):
         camera = self.ids.cam
         if camera.texture:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"photo_{timestamp}.png"
             camera.export_to_png(filename)
+
+            self.crop_image_to_box(filename)
 
             self.captured_photos.append(filename)
             if len(self.captured_photos) > 2:
@@ -975,36 +1036,23 @@ class CameraPage(Screen):
             if len(self.captured_photos) == 2:
                 self.photo2_source = self.captured_photos[1]
 
-    def crop_image_to_box(self, filename, target_width=160, target_height=200):
-        img = PILImage.open(filename)
-        img_width, img_height = img.size
-        target_ratio = target_width / target_height
-        current_ratio = img_width / img_height
+            self.add_photo_to_stack(filename)
 
-        if current_ratio > target_ratio:
-            new_width = int(img_height * target_ratio)
-            left = (img_width - new_width) // 2
-            box = (left, 0, left + new_width, img_height)
-        else:
-            new_height = int(img_width / target_ratio)
-            top = (img_height - new_height) // 2
-            box = (0, top, img_width, top + new_height)
+    def add_photo_to_stack(self, path):
+        new_img = Image(
+            source = path,
+            size_hint = (None, None),
+            size = (dp(320), dp(400)),
 
-        cropped = img.crop(box)
-        cropped.save(filename)
-
-    def update_photostrip(self):
-        strip = self.ids.photo_strip
-        strip.clear_widgets()
-
-        for path in reversed(self.latest_photos):  # newest on top
-            img = Image(source=path, size_hint_y=None, height=dp(120))
-            img.reload()
-            strip.add_widget(img)
+            allow_stretch = True,
+            keep_ratio = True
+        )
+        self.ids.photo_list.add_widget(new_img)
 
 class ClickableImage(ButtonBehavior, Image):
     def on_press(self):
         print("Image Clicked!")
+
 
 class CameraWidget(Image):
     def __init__(self, **kwargs):
@@ -1020,6 +1068,31 @@ class CameraWidget(Image):
             texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
             texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
             self.texture = texture
+
+class DesignPage(Screen):
+    pass
+
+class PhotoDisplay(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = 'vertical'
+        self.spacing = dp(10)
+        self.padding = [dp(20), dp(20), dp(20), dp(20)]
+
+        #Photo1
+        self.photo1 = Image(size_hint = (None, None), size = (300, 200))
+        self.add_widget(self.photo1)
+
+        #Photo2
+        self.photo2 = Image(size_hint = (None, None), size = (300, 200))
+        self.add_widget(self.photo2)
+
+        self.text_input = TextInput(size_hint = (None, None), width = 300, height = 50)
+        self.add_widget(self.text_input)
+
+    def update_photos(self, photo1_path, photo2_path):
+        self.photo1.source = photo1_path
+        self.photo2.source = photo2_path
 
 class Photobooth(MDApp):
     def build(self):
@@ -1055,11 +1128,43 @@ class Photobooth(MDApp):
     def show_account_screen(self):
         print("ACCOUNT clicked!")
 
-cred = credentials.Certificate("C:/Users/lauronrochelle22/Downloads/shutterbooth-e72ed-firebase-adminsdk-fbsvc-005a141dfd.json")
+    def take_photo(self):
+        camera = self.root.get_screen('camera').ids.cam
+        texture = camera.texture
+
+        if texture:
+            flipped_texture = texture.get_region(0, 0, texture.width, texture.height)
+            flipped_texture.flip_vertical()
+
+            timestamp = int(time.time())
+            photo_path = f"photo_{timestamp}.png"
+
+            flipped_texture.save(photo_path)
+
+            self.add_photo(photo_path)
+        else:
+            print("No camera texture found!")
+
+        if camera.texture:
+            filename = "captured_photo.png"
+            camera.export_to_png(filename)
+
+            design_screen = self.root.get_screen('design')
+            design_screen.ids.photo1.source = filename
+            design_screen.ids.photo2.source = filename
+
+    def add_photo(self, photo_path):
+        photo_list = self.root.get_screen('camera').ids.photo_list
+        if len(photo_list.children) >= 2:
+            photo_list.clear_widgets()
+        img = Image(source = photo_path, size_hint = (None, None), size = (320, 400))
+        photo_list.add_widget(img)
+
+cred = credentials.Certificate(
+    "C:/Users/lauronrochelle22/Downloads/shutterbooth-e72ed-firebase-adminsdk-fbsvc-005a141dfd.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://shutterbooth-e72ed-default-rtdb.asia-southeast1.firebasedatabase.app/users'
 })
-
 
 if __name__ == "__main__":
     Photobooth().run()
