@@ -34,6 +34,7 @@ from shutil import copyfile
 import time
 from kivy.uix.image import Image as CoreImage
 from kivy.uix.textinput import TextInput
+from kivy.graphics import Color, Rectangle
 
 
 KV = '''
@@ -718,7 +719,7 @@ ScreenManager:
                 line_color: 0, 0, 0, 1
                 radius: [24, 24, 24, 24]
                 on_release: app.take_photo()
-                
+
         BoxLayout:
             orientation: 'vertical'
             size_hint_x: None
@@ -758,7 +759,7 @@ ScreenManager:
         on_release: 
             app.root.current = 'home'
             app.root.current = 'design'
-            
+
 <DesignPage>:
     name: 'design'
     canvas.before:
@@ -770,16 +771,16 @@ ScreenManager:
 
     BoxLayout:
         orientation: 'vertical'
-        spacing: dp(0)
-        padding: [dp(10), dp(0), dp(10), dp(0)]  # Adjust to minimize unnecessary gaps
+        padding: [dp(10), dp(0), dp(10), dp(0)]
+        pos_hint: {"center_x": 0.2, "center_y": 0.7}
 
-        # Black BoxLayout for Images
-        BoxLayout:
+        ColorChangingBox:
+            id: design_box
             orientation: 'vertical'
             size_hint: None, None
-            width: dp(200)
-            height: dp(450)
-            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            width: dp(200)  # Adjust width to fit both images
+            height: dp(450) # Increase height to provide enough space
+            pos_hint: {"center_x": 0.5, "center_y": 0.8}
             canvas.before:
                 Color:
                     rgba: (0, 0, 0, 1)  # Black background
@@ -787,34 +788,72 @@ ScreenManager:
                     size: self.size
                     pos: self.pos
 
-            # Image 1 - Positioned upward
-            FloatLayout:
+            Image:
+                id: photo1
                 size_hint: None, None
-                width: dp(200)
-                height: dp(250)  # Contain the upper image specifically
+                size: dp(400), dp(200)
+                allow_stretch: True
+                keep_ratio: True
+                pos_hint: {"center_x": 0.5, "top": 1.5}  # Align image to top
 
-                Image:
-                    id: photo1
-                    size_hint: None, None
-                    size: dp(180), dp(150)
-                    allow_stretch: True
-                    keep_ratio: True
-                    pos_hint: {"center_x": 0.5, "top": 1.0}  # Push to the top of FloatLayout
+            Widget:  # Spacer to increase separation between the images
+                size_hint_y: None
+                height: dp(2)  # Adjust spacing
 
-            # Image 2 - Positioned immediately below
-            FloatLayout:
+            Image:
+                id: photo2
                 size_hint: None, None
-                width: dp(200)
-                height: dp(200)  # Contain the lower image specifically
+                size: dp(320), dp(200)
+                allow_stretch: True
+                keep_ratio: True
+                pos_hint: {"center_x": 0.5, "top": 0.4}  # Move image downward slightly
 
-                Image:
-                    id: photo2
-                    size_hint: None, None
-                    size: dp(180), dp(150)
-                    allow_stretch: True
-                    keep_ratio: True
-                    pos_hint: {"center_x": 0.5, "top": 1.0}  # Push to the top of FloatLayout
-                    
+    ClickableImage:
+        source: "black.png"  
+        size_hint: None, None
+        size: dp(100), dp(100)  # Adjust size
+        allow_stretch: True
+        keep_ratio: True
+        pos_hint: {"center_x": 0.35, "top": 0.8}
+        on_touch_down: app.on_image_click(self)
+        
+    ClickableImage:
+        source: "green.png"  
+        size_hint: None, None
+        size: dp(100), dp(100)  # Adjust size
+        allow_stretch: True
+        keep_ratio: True
+        pos_hint: {"center_x": 0.40, "top": 0.8}
+        on_touch_down: app.on_image_click(self)
+        
+    ClickableImage:
+        source: "pink.png"  
+        size_hint: None, None
+        size: dp(100), dp(100)  # Adjust size
+        allow_stretch: True
+        keep_ratio: True
+        pos_hint: {"center_x": 0.45, "top": 0.8}
+        on_touch_down: app.on_image_click(self)
+        
+    ClickableImage:
+        source: "violet.png"  
+        size_hint: None, None
+        size: dp(100), dp(100)  # Adjust size
+        allow_stretch: True
+        keep_ratio: True
+        pos_hint: {"center_x": 0.50, "top": 0.8}
+        on_touch_down: app.on_image_click(self)
+        
+    ClickableImage:
+        source: "yellow.png"  
+        size_hint: None, None
+        size: dp(100), dp(100)  # Adjust size
+        allow_stretch: True
+        keep_ratio: True
+        pos_hint: {"center_x": 0.55, "top": 0.8}
+        on_touch_down: app.on_image_click(self)
+
+
 '''
 
 
@@ -1015,20 +1054,7 @@ class CameraPage(Screen):
     def crop_image_to_box(self, filename, target_width=160, target_height=200):
         img = PILImage.open(filename)
         img = img.resize((800, 1000), PILImage.LANCZOS)
-
         img.save(filename)
-        img_width, img_height = img.size
-        target_ratio = target_width / target_height
-        current_ratio = img_width / img_height
-
-        if current_ratio > target_ratio:
-            new_width = int(img_height * target_ratio)
-            left = (img_width - new_width) // 2
-            box = (left, 0, left + new_width, img_height)
-        else:
-            new_height = int(img_width / target_ratio)
-            top = (img_height - new_height) // 2
-            box = (0, top, img_width, top + new_height)
 
     def capture(self):
         camera = self.ids.cam
@@ -1052,14 +1078,15 @@ class CameraPage(Screen):
 
     def add_photo_to_stack(self, path):
         new_img = Image(
-            source = path,
-            size_hint = (None, None),
-            size = (dp(320), dp(400)),
+            source=path,
+            size_hint=(None, None),
+            size=(dp(320), dp(400)),
 
-            allow_stretch = True,
-            keep_ratio = True
+            allow_stretch=True,
+            keep_ratio=True
         )
         self.ids.photo_list.add_widget(new_img)
+
 
 class ClickableImage(ButtonBehavior, Image):
     def on_press(self):
@@ -1081,8 +1108,10 @@ class CameraWidget(Image):
             texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
             self.texture = texture
 
+
 class DesignPage(Screen):
     pass
+
 
 class PhotoDisplay(BoxLayout):
     def __init__(self, **kwargs):
@@ -1091,20 +1120,39 @@ class PhotoDisplay(BoxLayout):
         self.spacing = dp(10)
         self.padding = [dp(20), dp(20), dp(20), dp(20)]
 
-        #Photo1
-        self.photo1 = Image(size_hint = (None, None), size = (300, 200))
+        # Photo1
+        self.photo1 = Image(size_hint=(None, None), size=(450, 350))
         self.add_widget(self.photo1)
 
-        #Photo2
-        self.photo2 = Image(size_hint = (None, None), size = (300, 200))
+        # Photo2
+        self.photo2 = Image(size_hint=(None, None), size=(450, 350))
         self.add_widget(self.photo2)
-
-        self.text_input = TextInput(size_hint = (None, None), width = 300, height = 50)
-        self.add_widget(self.text_input)
 
     def update_photos(self, photo1_path, photo2_path):
         self.photo1.source = photo1_path
         self.photo2.source = photo2_path
+
+class DesignBox(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas.before:
+            Color(1, 1, 1, 1)
+            self.rect = Rectangle(pos = self.pos, size = self.size)
+        self.bind(pos = self.update_rect, size = self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.size = self.size
+        self.rect.pos = self.pos
+
+    def change_color(self, r, g, b, a):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            Color(r, g, b, a)
+            self.rect = Rectangle(pos = self.pos, size = self.size)
+
+class MainWidget(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__
 
 class Photobooth(MDApp):
     def build(self):
@@ -1169,7 +1217,7 @@ class Photobooth(MDApp):
         photo_list = self.root.get_screen('camera').ids.photo_list
         if len(photo_list.children) >= 2:
             photo_list.clear_widgets()
-        img = Image(source = photo_path, size_hint = (None, None), size = (320, 400))
+        img = Image(source=photo_path, size_hint=(None, None), size=(320, 400))
         photo_list.add_widget(img)
 
 cred = credentials.Certificate(
