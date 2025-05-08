@@ -31,11 +31,19 @@ from firebase_admin import credentials, db
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 from shutil import copyfile
-import time
 from kivy.uix.image import Image as CoreImage
 from kivy.uix.textinput import TextInput
 from kivy.factory import Factory
-
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email_helper import send_reset_email
+from email.message import EmailMessage
+import firebase_admin
+from firebase_admin import credentials, auth
+import secrets
+import time
+import hashlib
 
 KV = '''
 ScreenManager:
@@ -875,7 +883,6 @@ class RegisterForm(Screen):
     dialog = None
 
 class ForgotPassword(Screen):
-    pass
 
     def register_user(self):
         full_name = self.ids.full_name.text
@@ -1126,29 +1133,6 @@ class CameraWidget(Image):
             texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
             self.texture = texture
 
-class ForgotPasswordScreen(Screen):
-    pass
-
-    def build(self):
-        return Builder.load_file('photobooth.kv')
-
-    def send_reset_link(self):
-        email = self.root.get_screen('forgot_password').ids.email_field.text
-        # Implement your logic to send a reset link to the email
-        print(f"Reset link sent to {email}")
-        # Optionally, navigate back to the login screen
-        self.root.current = 'login'
-
-    def send_reset_code(self):
-        email = self.ids.email_field.text
-        if email:
-            # Implement your logic to send the reset code here
-            print(f"Sending reset code to {email}")
-            # For example, you can use smtplib or any email-sending library
-        else:
-            print("Please enter a valid email address.")
-
-
 
 class DesignPage(Screen):
     pass
@@ -1253,4 +1237,5 @@ firebase_admin.initialize_app(cred, {
 })
 
 if __name__ == "__main__":
+
     Photobooth().run()
