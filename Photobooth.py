@@ -1,3 +1,6 @@
+import email
+from cmath import rect
+
 import cv2
 from kivy.lang import Builder
 from kivymd.app import MDApp
@@ -31,11 +34,18 @@ from firebase_admin import credentials, db
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 from shutil import copyfile
-import time
 from kivy.uix.image import Image as CoreImage
 from kivy.uix.textinput import TextInput
-from kivy.graphics import Color, Rectangle
-
+from kivy.factory import Factory
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.message import EmailMessage
+import firebase_admin
+from firebase_admin import credentials, auth
+import secrets
+import time
+import hashlib
 
 KV = '''
 ScreenManager:
@@ -46,6 +56,7 @@ ScreenManager:
     HomePage:
     CameraPage:
     DesignPage:
+    ForgotPassword:
 
 <ArrowButton@Button>:
     size_hint: None, None
@@ -178,8 +189,8 @@ ScreenManager:
         on_release: app.root.current = 'sign'
 
     MDTextField:
-        id: full_name
-        hint_text: "Full name:"
+        id: email
+        hint_text: "Email:"
         mode: "rectangle"
         size_hint_x: None
         width: 400
@@ -338,7 +349,7 @@ ScreenManager:
         text_color: 0, 0, 0, 1  # Blue text (change color as needed)
         font_size: "14sp"
         pos_hint: {"center_x": 0.5, "center_y": 0.3}
-        on_release: app.forgot_password()  # Calls a function when clicked
+        on_release:app.root.current = 'forgot_password'
 
     MDRoundFlatButton:
         text: "Login"
@@ -360,6 +371,57 @@ ScreenManager:
         size_hint: None, None
         size: 1000, 1000
         pos_hint: {"center_x": 0.5, "center_y": 0.65}
+
+<ForgotPassword>:
+    name: 'forgot_password'
+    canvas.before:
+        Color:
+            rgba: (240/255, 246/255, 237/255, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    MDIconButton:
+        icon: "arrow-left"
+        theme_text_color: "Custom"
+        text_color: 0, 0, 0, 1
+        size_hint: None, None
+        size: dp(50), dp(50)
+        pos_hint: {"x": 0.05, "top": 0.95}
+        on_release: app.root.current = 'login'
+
+    MDLabel:
+        text: "Reset Your Password"
+        halign: "center"
+        font_style: "H5"
+        pos_hint: {"center_x": 0.5, "center_y": 0.8}
+
+    MDTextField:
+        id: email_field
+        hint_text: "Enter your email"
+        mode: "rectangle"
+        size_hint_x: None
+        width: 400
+        pos_hint: {"center_x": 0.5, "center_y": 0.6}
+        font_size: "12sp"
+        text_color: 0, 0, 0, 1
+        line_color_normal: 0, 0, 0, 1
+        line_color_focus: 0, 0, 0, 1
+        hint_text_color: 0, 0, 0, 1
+        helper_text_mode: "on_focus"
+
+    MDRoundFlatButton:
+        text: "Send Reset Code"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.5, "center_y": 0.45}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1
+        md_bg_color: 0.867, 0.894, 0.882, 1
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: root.send_reset_code()
 
 <HomePage>:
     name: 'home'
@@ -774,12 +836,12 @@ ScreenManager:
         padding: [dp(10), dp(0), dp(10), dp(0)]
         pos_hint: {"center_x": 0.2, "center_y": 0.7}
 
-        ColorChangingBox:
-            id: design_box
+        MDBoxLayout:
+            id: black_box_layout
             orientation: 'vertical'
             size_hint: None, None
-            width: dp(200)  # Adjust width to fit both images
-            height: dp(450) # Increase height to provide enough space
+            width: dp(200)  
+            height: dp(450) 
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
             canvas.before:
                 Color:
@@ -806,55 +868,16 @@ ScreenManager:
                 size: dp(320), dp(200)
                 allow_stretch: True
                 keep_ratio: True
-                pos_hint: {"center_x": 0.5, "top": 0.4}  # Move image downward slightly
-
+                pos_hint: {"center_x": 0.5, "top": 0.4} 
+                
     ClickableImage:
-        source: "black.png"  
+        source: "green.png"
         size_hint: None, None
-        size: dp(100), dp(100)  # Adjust size
-        allow_stretch: True
-        keep_ratio: True
-        pos_hint: {"center_x": 0.35, "top": 0.8}
-        on_touch_down: app.on_image_click(self)
-        
-    ClickableImage:
-        source: "green.png"  
-        size_hint: None, None
-        size: dp(100), dp(100)  # Adjust size
-        allow_stretch: True
-        keep_ratio: True
-        pos_hint: {"center_x": 0.40, "top": 0.8}
-        on_touch_down: app.on_image_click(self)
-        
-    ClickableImage:
-        source: "pink.png"  
-        size_hint: None, None
-        size: dp(100), dp(100)  # Adjust size
-        allow_stretch: True
-        keep_ratio: True
-        pos_hint: {"center_x": 0.45, "top": 0.8}
-        on_touch_down: app.on_image_click(self)
-        
-    ClickableImage:
-        source: "violet.png"  
-        size_hint: None, None
-        size: dp(100), dp(100)  # Adjust size
-        allow_stretch: True
-        keep_ratio: True
-        pos_hint: {"center_x": 0.50, "top": 0.8}
-        on_touch_down: app.on_image_click(self)
-        
-    ClickableImage:
-        source: "yellow.png"  
-        size_hint: None, None
-        size: dp(100), dp(100)  # Adjust size
-        allow_stretch: True
-        keep_ratio: True
-        pos_hint: {"center_x": 0.55, "top": 0.8}
-        on_touch_down: app.on_image_click(self)
-
-
+        size: "100dp", "100dp"
+        pos_hint: {"center_x": 0.35, "center_y": 0.75}
 '''
+
+
 
 
 class ArrowButton(Button):
@@ -873,19 +896,117 @@ class RegisterForm(Screen):
     dialog = None
 
     def register_user(self):
-        full_name = self.ids.full_name.text
+        email = self.ids.email.text
         username = self.ids.username.text
         password = self.ids.password.text
         confirm_password = self.ids.confirm_password.text
 
-        if not full_name or not username or not password or not confirm_password:
+        try:
+            user = auth.create_user_with_email_and_password(email, password)
+            auth.send_email_verification(user['idToken'])  # Send verification email
+            print("Registration successful! Verification email sent.")
+        except Exception as e:
+            print("Error:", e)
+
+        if not email or not username or not password or not confirm_password:
+            self.show_error_dialog("Please fill in all the fields!")
+            return
+
+        if password == confirm_password:
+            try:
+                ref = db.reference('users')
+                ref.child(username).set({
+                    'email': email,
+                    'password': password
+                })
+                print("Registration successful!")
+                self.manager.current = "login"
+            except Exception as e:
+                print("Database error:", e)
+        else:
+            print("Passwords do not match!")
+
+    def show_error_dialog(self, message):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                type="custom",
+                content_cls=MDLabel(
+                    text="Registration Error",
+                    halign="center",
+                    font_name="GlacialIndifference-Regular.ttf",
+                    font_size="16sp",
+                    theme_text_color="Custom",
+                    text_color=(0, 0, 0, 1),
+                ),
+                size_hint=(0.2, None),
+                radius=[20, 20, 20, 20],
+                height=dp(150),
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        font_name="GlacialIndifference-Regular.ttf",
+                        text_color=(0, 0, 0, 1),
+                        on_release=lambda x: self.dialog.dismiss()
+                    ),
+                ],
+            )
+        self.dialog.text = message
+        self.dialog.open()
+
+    def show_error_dialog(self, message):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                type="custom",
+                content_cls=MDLabel(
+                    text="Please fill in the field!",
+                    halign="center",
+                    font_name="GlacialIndifference-Regular.ttf",
+                    font_size="16sp",
+                    theme_text_color="Custom",
+                    text_color=(0, 0, 0, 1),
+                ),
+                size_hint=(0.2, None),
+                radius=[20, 20, 20, 20],
+                height=dp(150),
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        font_name="GlacialIndifference-Regular.ttf",
+                        text_color=(0, 0, 0, 1),
+                        on_release=lambda x: self.dialog.dismiss()
+                    ),
+                ],
+            )
+        else:
+            self.dialog.content_cls.text = message
+        self.dialog.open()
+
+    def check_register(self):
+        fullname = self.ids.register_email.text
+        username = self.ids.register_username.text
+        password = self.ids.register_password.text
+
+        if not fullname:
+            self.show_error_dialog("Please fill in the field!")
+        else:
+            self.register_user(email, username, password)
+
+
+class ForgotPassword(Screen):
+    def register_user(self):
+        email = self.ids.email.text
+        username = self.ids.username.text
+        password = self.ids.password.text
+        confirm_password = self.ids.confirm_password.text
+
+        if not email or not username or not password or not confirm_password:
             self.show_error_dialog("Please fill in all the fields!")
             return
 
         if password == confirm_password:
             ref = db.reference('users')
             ref.child(username).set({
-                'full_name': full_name,
+                'email': email,
                 'password': password
             })
             print("Registration successful!")
@@ -949,14 +1070,14 @@ class RegisterForm(Screen):
         self.dialog.open()
 
     def check_register(self):
-        fullname = self.ids.register_fullname.text
+        email = self.ids.register_email.text
         username = self.ids.register_username.text
         password = self.ids.register_password.text
 
-        if not fullname:
+        if not email:
             self.show_error_dialog("Please fill in the field!")
         else:
-            self.register_user(fullname, username, password)
+            self.register_user(email, username, password)
 
 
 class LogInForm(Screen):
@@ -1054,7 +1175,20 @@ class CameraPage(Screen):
     def crop_image_to_box(self, filename, target_width=160, target_height=200):
         img = PILImage.open(filename)
         img = img.resize((800, 1000), PILImage.LANCZOS)
+
         img.save(filename)
+        img_width, img_height = img.size
+        target_ratio = target_width / target_height
+        current_ratio = img_width / img_height
+
+        if current_ratio > target_ratio:
+            new_width = int(img_height * target_ratio)
+            left = (img_width - new_width) // 2
+            box = (left, 0, left + new_width, img_height)
+        else:
+            new_height = int(img_width / target_ratio)
+            top = (img_height - new_height) // 2
+            box = (0, top, img_width, top + new_height)
 
     def capture(self):
         camera = self.ids.cam
@@ -1121,38 +1255,16 @@ class PhotoDisplay(BoxLayout):
         self.padding = [dp(20), dp(20), dp(20), dp(20)]
 
         # Photo1
-        self.photo1 = Image(size_hint=(None, None), size=(450, 350))
+        self.photo1 = Image(size_hint=(None, None), size=(300, 200))
         self.add_widget(self.photo1)
 
         # Photo2
-        self.photo2 = Image(size_hint=(None, None), size=(450, 350))
+        self.photo2 = Image(size_hint=(None, None), size=(300, 200))
         self.add_widget(self.photo2)
 
     def update_photos(self, photo1_path, photo2_path):
         self.photo1.source = photo1_path
         self.photo2.source = photo2_path
-
-class DesignBox(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        with self.canvas.before:
-            Color(1, 1, 1, 1)
-            self.rect = Rectangle(pos = self.pos, size = self.size)
-        self.bind(pos = self.update_rect, size = self.update_rect)
-
-    def update_rect(self, *args):
-        self.rect.size = self.size
-        self.rect.pos = self.pos
-
-    def change_color(self, r, g, b, a):
-        self.canvas.before.clear()
-        with self.canvas.before:
-            Color(r, g, b, a)
-            self.rect = Rectangle(pos = self.pos, size = self.size)
-
-class MainWidget(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__
 
 class Photobooth(MDApp):
     def build(self):
@@ -1182,7 +1294,7 @@ class Photobooth(MDApp):
     def forgot_password(self):
         print("Forgot Password clicked!")
 
-    def on_image_click(selfself, image_name):
+    def on_image_click(self, image_name):
         print(f"Clicked on: {image_name}")
 
     def show_account_screen(self):
@@ -1220,11 +1332,37 @@ class Photobooth(MDApp):
         img = Image(source=photo_path, size_hint=(None, None), size=(320, 400))
         photo_list.add_widget(img)
 
+    def change_color(self):
+        print("Image Clicked!")
+        black_box_layout = self.root.ids.black_box_layout
+
+        # Clear previous canvas instructions and apply the new color
+        black_box_layout.canvas.before.clear()
+
+        # Redraw the rectangle with the new color (Green)
+        with black_box_layout.canvas.before:
+            Color(0, 1, 0, 1)  # Green color (RGBA)
+            Rectangle(size=black_box_layout.size, pos=black_box_layout.pos)
+
+
+config = {
+    "apiKey": "AIzaSyAWE6tdwKl9lrLfQidIcd4wAbiWpPHejVc",
+    "authDomain": "shutterbooth-e72ed.firebaseapp.com",
+    "databaseURL": "https://shutterbooth-e72ed-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "storageBucket": "shutterbooth-e72ed.firebasestorage.app"
+}
+
+firebase = pyrebase.initialize_app(config)
+auth = firebase.auth()
+
+
+
 cred = credentials.Certificate(
     "C:/Users/lauronrochelle22/Downloads/shutterbooth-e72ed-firebase-adminsdk-fbsvc-005a141dfd.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://shutterbooth-e72ed-default-rtdb.asia-southeast1.firebasedatabase.app/users'
 })
+
 
 if __name__ == "__main__":
     Photobooth().run()
