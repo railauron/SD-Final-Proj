@@ -841,11 +841,26 @@ ScreenManager:
         pos_hint: {"x": 0.95, "top": 0.98}
         on_release: app.root.current = 'home'
     
+    FloatLayout:
+        orientation: 'vertical' 
+        size_hint_y: None
+        height: 60
+    
+    Label:
+        text: "CUSTOMIZE"
+        bold: True
+        font_size: 15
+        color: 0, 0, 0, 1
+        height: 150
+        pos_hint: {"center_x": 0.5, "center_y": 13.5}
+    
     BoxLayout:
         orientation: 'vertical'
         padding: [dp(10), dp(0), dp(10), dp(0)]
         pos_hint: {"center_x": 0.2, "center_y": 0.7}
-
+    
+        
+        
         MDFloatLayout:
             id: black_box_layout
             orientation: 'vertical'
@@ -856,14 +871,7 @@ ScreenManager:
             md_bg_color: (0, 0, 0, 1)  # Default black
     
             
-            Label:
-                text: "CUSTOMIZE"
-                bold: True
-                font_size: 15
-                color: 0, 0, 0, 1
-                height: 40
-                pos_hint: {"center_x": 0.6, "center_y": 15.0}
-                  
+            
             Image:
                 id: photo1
                 size_hint: None, None
@@ -883,9 +891,6 @@ ScreenManager:
                 allow_stretch: True
                 keep_ratio: True
                 pos_hint: {"center_x": 0.5, "top": 0.6} 
-            
-              
-            
             
     ClickableImage:
         source: "black.png"
