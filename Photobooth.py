@@ -823,6 +823,7 @@ ScreenManager:
             app.root.current = 'design'
 
 <DesignPage>:
+    id: design_page
     name: 'design'
     canvas.before:
         Color:
@@ -830,13 +831,22 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-
+    
+    MDIconButton:
+        icon: "arrow-left"
+        theme_text_color: "Custom"
+        text_color: 0, 0, 0, 1
+        size_hint: None, None
+        size: dp(50), dp(50)
+        pos_hint: {"x": 0.95, "top": 0.98}
+        on_release: app.root.current = 'home'
+    
     BoxLayout:
         orientation: 'vertical'
         padding: [dp(10), dp(0), dp(10), dp(0)]
         pos_hint: {"center_x": 0.2, "center_y": 0.7}
 
-        MDBoxLayout:
+        MDFloatLayout:
             id: black_box_layout
             orientation: 'vertical'
             size_hint: None, None
@@ -844,19 +854,27 @@ ScreenManager:
             height: dp(450)
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
             md_bg_color: (0, 0, 0, 1)  # Default black
-
+    
             
+            Label:
+                text: "CUSTOMIZE"
+                bold: True
+                font_size: 15
+                color: 0, 0, 0, 1
+                height: 40
+                pos_hint: {"center_x": 0.6, "center_y": 15.0}
+                  
             Image:
                 id: photo1
                 size_hint: None, None
                 size: dp(400), dp(200)
                 allow_stretch: True
                 keep_ratio: True
-                pos_hint: {"center_x": 0.5, "top": 1.5}  # Align image to top
+                pos_hint: {"center_x": 0.5, "top": 1.0}  # Align image to top
 
             Widget:  # Spacer to increase separation between the images
                 size_hint_y: None
-                height: dp(2)  # Adjust spacing
+                height: dp(1)  # Adjust spacing
 
             Image:
                 id: photo2
@@ -864,14 +882,46 @@ ScreenManager:
                 size: dp(320), dp(200)
                 allow_stretch: True
                 keep_ratio: True
-                pos_hint: {"center_x": 0.5, "top": 0.4} 
-                
+                pos_hint: {"center_x": 0.5, "top": 0.6} 
+            
+              
+            
+            
+    ClickableImage:
+        source: "black.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.35, "center_y": 0.75}
+        on_release: app.change_color((0, 0, 0, 1))  # Black
+     
     ClickableImage:
         source: "green.png"
         size_hint: None, None
         size: (150, 150) 
-        pos_hint: {"center_x": 0.35, "center_y": 0.75}
-        on_release: app.change_color()
+        pos_hint: {"center_x": 0.40, "center_y": 0.75}
+        on_release: app.change_color((0.5, 0.8, 0.7, 1))  # Green
+        
+    ClickableImage:
+        source: "pink.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.45, "center_y": 0.75}
+        on_release: app.change_color((1, 0.8, 0.7, 1))  # Pink
+        
+    ClickableImage:
+        source: "violet.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.50, "center_y": 0.75}
+        on_release: app.change_color((0.8, 0.7, 0.9, 1))  # Violet
+        
+    ClickableImage:
+        source: "yellow.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.55, "center_y": 0.75}
+        on_release: app.change_color((1, 1, 0.7, 1))  # Yellow
+        
         
 <ClickableImage@ButtonBehavior+Image>:
 
@@ -1332,12 +1382,12 @@ class Photobooth(MDApp):
         img = Image(source=photo_path, size_hint=(None, None), size=(320, 400))
         photo_list.add_widget(img)
 
-    def change_color(self):
-        print("Available IDs:", self.root.ids.keys())  # Debugging step
-        black_box = self.root.ids.get("black_box_layout")  # Try getting the layout
+    def change_color(self, color):
+        design_screen = self.root.get_screen('design')
+        black_box = design_screen.ids.black_box_layout
 
         if black_box:
-            black_box.md_bg_color = (0.5, 0.8, 0.7, 1)  # Change to green
+            black_box.md_bg_color = color
             print("Color changed successfully!")
         else:
             print("ERROR: 'black_box_layout' not found!")
