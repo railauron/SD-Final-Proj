@@ -840,16 +840,12 @@ ScreenManager:
             id: black_box_layout
             orientation: 'vertical'
             size_hint: None, None
-            width: dp(200)  
-            height: dp(450) 
+            width: dp(200)
+            height: dp(450)
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
-            canvas.before:
-                Color:
-                    rgba: (0, 0, 0, 1)  # Black background
-                Rectangle:
-                    size: self.size
-                    pos: self.pos
+            md_bg_color: (0, 0, 0, 1)  # Default black
 
+            
             Image:
                 id: photo1
                 size_hint: None, None
@@ -873,8 +869,12 @@ ScreenManager:
     ClickableImage:
         source: "green.png"
         size_hint: None, None
-        size: "100dp", "100dp"
+        size: (150, 150) 
         pos_hint: {"center_x": 0.35, "center_y": 0.75}
+        on_release: app.change_color()
+        
+<ClickableImage@ButtonBehavior+Image>:
+
 '''
 
 
@@ -1333,17 +1333,14 @@ class Photobooth(MDApp):
         photo_list.add_widget(img)
 
     def change_color(self):
-        print("Image Clicked!")
-        black_box_layout = self.root.ids.black_box_layout
+        print("Available IDs:", self.root.ids.keys())  # Debugging step
+        black_box = self.root.ids.get("black_box_layout")  # Try getting the layout
 
-        # Clear previous canvas instructions and apply the new color
-        black_box_layout.canvas.before.clear()
-
-        # Redraw the rectangle with the new color (Green)
-        with black_box_layout.canvas.before:
-            Color(0, 1, 0, 1)  # Green color (RGBA)
-            Rectangle(size=black_box_layout.size, pos=black_box_layout.pos)
-
+        if black_box:
+            black_box.md_bg_color = (0.5, 0.8, 0.7, 1)  # Change to green
+            print("Color changed successfully!")
+        else:
+            print("ERROR: 'black_box_layout' not found!")
 
 config = {
     "apiKey": "AIzaSyAWE6tdwKl9lrLfQidIcd4wAbiWpPHejVc",
