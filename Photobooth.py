@@ -1,3 +1,6 @@
+import email
+from cmath import rect
+
 import cv2
 from kivy.lang import Builder
 from kivymd.app import MDApp
@@ -22,7 +25,6 @@ from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.properties import StringProperty
 from kivy.app import App
-import os
 from datetime import datetime
 from PIL import Image as PILImage
 import pyrebase
@@ -37,13 +39,18 @@ from kivy.factory import Factory
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email_helper import send_reset_email
 from email.message import EmailMessage
 import firebase_admin
 from firebase_admin import credentials, auth
 import secrets
 import time
 import hashlib
+import os
+from kivy.uix.label import Label
+from kivy.graphics import Fbo, Color, Rectangle
+from kivy.core.image import Image as CoreImage
+from datetime import datetime
+from kivy.uix.popup import Popup
 
 KV = '''
 ScreenManager:
@@ -55,7 +62,7 @@ ScreenManager:
     CameraPage:
     DesignPage:
     ForgotPassword:
-    
+
 <ArrowButton@Button>:
     size_hint: None, None
     size: 50, 50
@@ -187,8 +194,8 @@ ScreenManager:
         on_release: app.root.current = 'sign'
 
     MDTextField:
-        id: full_name
-        hint_text: "Full name:"
+        id: email
+        hint_text: "Email:"
         mode: "rectangle"
         size_hint_x: None
         width: 400
@@ -378,7 +385,7 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-            
+
     MDIconButton:
         icon: "arrow-left"
         theme_text_color: "Custom"
@@ -462,53 +469,26 @@ ScreenManager:
                     source: "set1 (2).png"
                     size_hint: None, None
                     size: dp(300), dp(300)
-                    pos_hint: {"center_y": 0.35, "x": 0.10}
+                    pos_hint: {"center_y": 0.37, "x": 0.20}
                     on_release: app.root.current = 'camera'
 
                 MDLabel:
                     text: "SET 1"
                     halign: "center"
-                    pos_hint: {"center_x": 0.20, "center_y": 0.15}
-                    text_style: "GlacialIndifference-Regular.ttf"
-
-
-                ClickableImage:
-                    source: "set2.png"
-                    size_hint: None, None
-                    size: dp(350), dp(350)
-                    pos_hint: {"center_y": 0.38, "x": 0.25}
-                    on_release: app.root.current = 'camera'
-
-                MDLabel:
-                    text: "SET 2"
-                    halign: "center"
-                    pos_hint: {"center_x": 0.36, "center_y": 0.15}
-                    text_style: "GlacialIndifference-Regular.ttf"
-
-                ClickableImage:
-                    source: "set3.png"
-                    size_hint: None, None
-                    size: dp(400), dp(400)
-                    pos_hint: {"center_y": 0.42, "x": 0.40}
-                    on_release: app.root.current = 'camera'
-
-                MDLabel:
-                    text: "SET 3"
-                    halign: "center"
-                    pos_hint: {"center_x": 0.52, "center_y": 0.15}
+                    pos_hint: {"center_x": 0.30, "center_y": 0.17}
                     text_style: "GlacialIndifference-Regular.ttf"
 
                 ClickableImage:
                     source: "set4.png"
                     size_hint: None, None
                     size: dp(350), dp(350)
-                    pos_hint: {"center_y": 0.33, "x": 0.62}
+                    pos_hint: {"center_y": 0.35, "x": 0.50}
                     on_release: app.root.current = 'camera'
 
                 MDLabel:
-                    text: "SET 4"
+                    text: "SET 2"
                     halign: "center"
-                    pos_hint: {"center_x": 0.73, "center_y": 0.15}
+                    pos_hint: {"center_x": 0.60, "center_y": 0.17}
                     text_style: "GlacialIndifference-Regular.ttf"
 
         MDNavigationDrawer:
@@ -821,48 +801,177 @@ ScreenManager:
             app.root.current = 'design'
 
 <DesignPage>:
+    id: design_page
     name: 'design'
     canvas.before:
         Color:
-            rgba: (240/255, 246/255, 237/255, 1)
+            rgba: (240/255, 246/255, 237/255, 1)  # Background color
         Rectangle:
             size: self.size
             pos: self.pos
-
+    
+    MDIconButton:
+        icon: "arrow-left"
+        theme_text_color: "Custom"
+        text_color: 0, 0, 0, 1
+        size_hint: None, None
+        size: dp(50), dp(50)
+        pos_hint: {"x": 0.95, "top": 0.98}
+        on_release: app.root.current = 'home'
+    
+    FloatLayout:
+        orientation: 'vertical' 
+        size_hint_y: None
+        height: 60
+    
+        Label:
+            text: "CUSTOMIZE"
+            bold: True
+            font_size: 35
+            color: 0, 0, 0, 1
+            height: 60
+            pos_hint: {"center_x": 0.2, "center_y": 13.5}
+    
+        FitImage:
+            source: "Shutter.png"
+            size_hint: None, None
+            size: 500, 500
+            pos_hint: {"center_x": 0.5, "center_y": 14.0}
+        
     BoxLayout:
         orientation: 'vertical'
-        spacing: dp(10)
-        padding: [dp(20), dp(20), dp(20), dp(20)]
-
-        BoxLayout:
+        padding: [dp(10), dp(0), dp(10), dp(0)]
+        pos_hint: {"center_x": 0.2, "center_y": 0.7}
+    
+        
+        MDFloatLayout:
+            id: black_box_layout
             orientation: 'vertical'
             size_hint: None, None
-            width: dp(600)
-            height: dp(600)
-            spacing: dp(10)
-            padding: dp(20)
-            canvas.before:
-                Color:
-                    rgba: (0, 0, 0, 1)
-                Rectangle: 
-                    size: self.size
-                    pos: self.pos
-
+            width: dp(200)
+            height: dp(450)
+            pos_hint: {"center_x": 0.5, "center_y": 0.8}
+            md_bg_color: (0, 0, 0, 1)  # Default black
+    
+            
+            
             Image:
                 id: photo1
                 size_hint: None, None
-                size: dp(300), dp(200)
+                size: dp(400), dp(200)
                 allow_stretch: True
                 keep_ratio: True
+                pos_hint: {"center_x": 0.5, "top": 1.0}  # Align image to top
+
+            Widget:  # Spacer to increase separation between the images
+                size_hint_y: None
+                height: dp(1)  # Adjust spacing
 
             Image:
                 id: photo2
                 size_hint: None, None
-                size: dp(300), dp(200)
+                size: dp(320), dp(200)
                 allow_stretch: True
                 keep_ratio: True
+                pos_hint: {"center_x": 0.5, "top": 0.6} 
+    
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: None, None
+        size: dp(400), dp(100)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+        spacing: dp(10)
 
+    MDTextField:
+        id: frame_text
+        hint_text: "Enter text for your frame"
+        mode: "rectangle"
+        size_hint_x: None
+        width: 400
+        pos_hint: {"center_x": 0.45, "center_y": 0.60}
+        font_size: "12sp"
+        text_color: 0, 0, 0, 1
+        line_color_normal: 0, 0, 0, 1
+        line_color_focus: 0, 0, 0, 1
+        hint_text_color: 0, 0, 0, 1
+        helper_text_mode: "on_focus"
 
+    MDRoundFlatButton:
+        text: "Add Text to Frame"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.45, "center_y": 0.50}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1
+        md_bg_color: (0.867, 0.894, 0.882, 1)  # Light gray background
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]  # Fully rounded corners
+        on_release: root.add_text_to_frame()
+    
+    MDRoundFlatButton:
+        text: "Save Photo"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.35, "center_y": 0.40}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1  # White text for better contrast
+        md_bg_color: (0.298, 0.686, 0.314, 1)  # Green color (Material Design 500)
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: root.save_photo()  
+    
+    MDRoundFlatButton:
+        text: "Add to Album"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.55, "center_y": 0.40}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1  # White text for better contrast
+        md_bg_color: (0.129, 0.588, 0.953, 1)  # Blue color (Material Design 500)
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: root.add_album()
+          
+    ClickableImage:
+        source: "black.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.35, "center_y": 0.75}
+        on_release: app.change_color((0, 0, 0, 1))  # Black
+     
+    ClickableImage:
+        source: "green.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.40, "center_y": 0.75}
+        on_release: app.change_color((0.5, 0.8, 0.7, 1))  # Green
+        
+    ClickableImage:
+        source: "pink.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.45, "center_y": 0.75}
+        on_release: app.change_color((1, 0.8, 0.7, 1))  # Pink
+        
+    ClickableImage:
+        source: "violet.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.50, "center_y": 0.75}
+        on_release: app.change_color((0.8, 0.7, 0.9, 1))  # Violet
+        
+    ClickableImage:
+        source: "yellow.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.55, "center_y": 0.75}
+        on_release: app.change_color((1, 1, 0.7, 1))  # Yellow
+        
+        
+<ClickableImage@ButtonBehavior+Image>:
 
 '''
 
@@ -882,22 +991,118 @@ class SignIn(Screen):
 class RegisterForm(Screen):
     dialog = None
 
-class ForgotPassword(Screen):
-
     def register_user(self):
-        full_name = self.ids.full_name.text
+        email = self.ids.email.text
         username = self.ids.username.text
         password = self.ids.password.text
         confirm_password = self.ids.confirm_password.text
 
-        if not full_name or not username or not password or not confirm_password:
+        try:
+            user = auth.create_user_with_email_and_password(email, password)
+            auth.send_email_verification(user['idToken'])  # Send verification email
+            print("Registration successful! Verification email sent.")
+        except Exception as e:
+            print("Error:", e)
+
+        if not email or not username or not password or not confirm_password:
+            self.show_error_dialog("Please fill in all the fields!")
+            return
+
+        if password == confirm_password:
+            try:
+                ref = db.reference('users')
+                ref.child(username).set({
+                    'email': email,
+                    'password': password
+                })
+                print("Registration successful!")
+                self.manager.current = "login"
+            except Exception as e:
+                print("Database error:", e)
+        else:
+            print("Passwords do not match!")
+
+    def show_error_dialog(self, message):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                type="custom",
+                content_cls=MDLabel(
+                    text="Registration Error",
+                    halign="center",
+                    font_name="GlacialIndifference-Regular.ttf",
+                    font_size="16sp",
+                    theme_text_color="Custom",
+                    text_color=(0, 0, 0, 1),
+                ),
+                size_hint=(0.2, None),
+                radius=[20, 20, 20, 20],
+                height=dp(150),
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        font_name="GlacialIndifference-Regular.ttf",
+                        text_color=(0, 0, 0, 1),
+                        on_release=lambda x: self.dialog.dismiss()
+                    ),
+                ],
+            )
+        self.dialog.text = message
+        self.dialog.open()
+
+    def show_error_dialog(self, message):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                type="custom",
+                content_cls=MDLabel(
+                    text="Please fill in the field!",
+                    halign="center",
+                    font_name="GlacialIndifference-Regular.ttf",
+                    font_size="16sp",
+                    theme_text_color="Custom",
+                    text_color=(0, 0, 0, 1),
+                ),
+                size_hint=(0.2, None),
+                radius=[20, 20, 20, 20],
+                height=dp(150),
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        font_name="GlacialIndifference-Regular.ttf",
+                        text_color=(0, 0, 0, 1),
+                        on_release=lambda x: self.dialog.dismiss()
+                    ),
+                ],
+            )
+        else:
+            self.dialog.content_cls.text = message
+        self.dialog.open()
+
+    def check_register(self):
+        fullname = self.ids.register_email.text
+        username = self.ids.register_username.text
+        password = self.ids.register_password.text
+
+        if not fullname:
+            self.show_error_dialog("Please fill in the field!")
+        else:
+            self.register_user(email, username, password)
+
+
+class ForgotPassword(Screen):
+    def register_user(self):
+        email = self.ids.email.text
+        username = self.ids.username.text
+        password = self.ids.password.text
+        confirm_password = self.ids.confirm_password.text
+
+        if not email or not username or not password or not confirm_password:
             self.show_error_dialog("Please fill in all the fields!")
             return
 
         if password == confirm_password:
             ref = db.reference('users')
             ref.child(username).set({
-                'full_name': full_name,
+                'email': email,
                 'password': password
             })
             print("Registration successful!")
@@ -961,14 +1166,14 @@ class ForgotPassword(Screen):
         self.dialog.open()
 
     def check_register(self):
-        fullname = self.ids.register_fullname.text
+        email = self.ids.register_email.text
         username = self.ids.register_username.text
         password = self.ids.register_password.text
 
-        if not fullname:
+        if not email:
             self.show_error_dialog("Please fill in the field!")
         else:
-            self.register_user(fullname, username, password)
+            self.register_user(email, username, password)
 
 
 class LogInForm(Screen):
@@ -1137,6 +1342,29 @@ class CameraWidget(Image):
 class DesignPage(Screen):
     pass
 
+    def add_text_to_frame(self):
+        """Add text to the frame below the photos"""
+        text = self.ids.frame_text.text
+        if not text:
+            return  # Don't add empty text
+
+        # Create a label for the text
+        text_label = Label(
+            text=text,
+            color=(1, 1, 1, 1),  # White text
+            font_size=dp(20),
+            size_hint=(None, None),
+            size=(dp(400), dp(50)),
+            pos_hint={'center_x': 0.5, 'y': 0.1}
+        )
+
+        # Add it to the black frame layout
+        self.ids.black_box_layout.add_widget(text_label)
+
+        # Clear the text input
+        self.ids.frame_text.text = ""
+
+
 
 class PhotoDisplay(BoxLayout):
     def __init__(self, **kwargs):
@@ -1153,13 +1381,66 @@ class PhotoDisplay(BoxLayout):
         self.photo2 = Image(size_hint=(None, None), size=(300, 200))
         self.add_widget(self.photo2)
 
-        self.text_input = TextInput(size_hint=(None, None), width=300, height=50)
-        self.add_widget(self.text_input)
-
     def update_photos(self, photo1_path, photo2_path):
         self.photo1.source = photo1_path
         self.photo2.source = photo2_path
 
+    def save_frame(self):
+        """Save the frame image to the user's Pictures directory"""
+        try:
+            # Create timestamp for filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"Frame_{timestamp}.png"
+
+            # Use the system's Pictures directory
+            pictures_dir = os.path.join(os.path.expanduser('~'), 'Pictures')
+            os.makedirs(pictures_dir, exist_ok=True)  # Create if doesn't exist
+            save_path = os.path.join(pictures_dir, filename)
+
+            # Get the frame widget
+            frame = self.ids.black_box_layout
+
+            # Ensure proper widget size
+            frame.size = (frame.width, frame.height)
+
+            # Create FBO and capture the frame
+            fbo = Fbo(size=frame.size)
+            with fbo:
+                Color(0, 0, 0, 1)  # Black background
+                Rectangle(size=frame.size)
+                for child in frame.children:
+                    child.draw(fbo)  # Draw all child widgets
+
+            # Export to image
+            fbo.draw()
+            texture = fbo.texture
+            core_img = CoreImage(texture, flipped=False)
+            core_img.save(save_path)
+
+            # Show confirmation
+            self.show_save_confirmation(save_path)
+            return True
+
+        except Exception as e:
+            print(f"Save error: {e}")
+            self.show_save_confirmation(None)
+            return False
+
+    def show_save_confirmation(self, path):
+        """Show save confirmation dialog"""
+        from kivymd.uix.dialog import MDDialog
+
+        dialog = MDDialog(
+            title="Saved Successfully!" if path else "Save Failed",
+            text=f"Frame saved to:\n{path}" if path else "Could not save the frame",
+            buttons=[
+                MDFlatButton(
+                    text="OK",
+                    on_release=lambda x: dialog.dismiss()
+                )
+            ]
+        )
+        dialog.open()
 
 class Photobooth(MDApp):
     def build(self):
@@ -1189,7 +1470,7 @@ class Photobooth(MDApp):
     def forgot_password(self):
         print("Forgot Password clicked!")
 
-    def on_image_click(selfself, image_name):
+    def on_image_click(self, image_name):
         print(f"Clicked on: {image_name}")
 
     def show_account_screen(self):
@@ -1227,8 +1508,26 @@ class Photobooth(MDApp):
         img = Image(source=photo_path, size_hint=(None, None), size=(320, 400))
         photo_list.add_widget(img)
 
+    def change_color(self, color):
+        design_screen = self.root.get_screen('design')
+        black_box = design_screen.ids.black_box_layout
+
+        if black_box:
+            black_box.md_bg_color = color
+            print("Color changed successfully!")
+        else:
+            print("ERROR: 'black_box_layout' not found!")
 
 
+config = {
+    "apiKey": "AIzaSyAWE6tdwKl9lrLfQidIcd4wAbiWpPHejVc",
+    "authDomain": "shutterbooth-e72ed.firebaseapp.com",
+    "databaseURL": "https://shutterbooth-e72ed-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "storageBucket": "shutterbooth-e72ed.firebasestorage.app"
+}
+
+firebase = pyrebase.initialize_app(config)
+auth = firebase.auth()
 
 cred = credentials.Certificate(
     "C:/Users/Cyrene Del Mundo/Downloads/shutterbooth-e72ed-firebase-adminsdk-fbsvc-005a141dfd.json")
@@ -1237,5 +1536,4 @@ firebase_admin.initialize_app(cred, {
 })
 
 if __name__ == "__main__":
-
     Photobooth().run()
