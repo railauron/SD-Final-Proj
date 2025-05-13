@@ -23,9 +23,8 @@ from kivy.uix.image import Image
 from kivy.uix.camera import Camera
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, ListProperty
 from kivy.app import App
-import os
 from datetime import datetime
 from PIL import Image as PILImage
 import pyrebase
@@ -46,6 +45,12 @@ from firebase_admin import credentials, auth
 import secrets
 import time
 import hashlib
+import os
+from kivy.uix.label import Label
+from kivy.graphics import Fbo, Color, Rectangle
+from kivy.core.image import Image as CoreImage
+from datetime import datetime
+from kivy.uix.popup import Popup
 
 KV = '''
 ScreenManager:
@@ -55,7 +60,9 @@ ScreenManager:
     LogInForm:
     HomePage:
     CameraPage:
+    CameraPage2:
     DesignPage:
+    DesignPage2:
     ForgotPassword:
 
 <ArrowButton@Button>:
@@ -464,53 +471,26 @@ ScreenManager:
                     source: "set1 (2).png"
                     size_hint: None, None
                     size: dp(300), dp(300)
-                    pos_hint: {"center_y": 0.35, "x": 0.10}
+                    pos_hint: {"center_y": 0.37, "x": 0.20}
                     on_release: app.root.current = 'camera'
 
                 MDLabel:
                     text: "SET 1"
                     halign: "center"
-                    pos_hint: {"center_x": 0.20, "center_y": 0.15}
-                    text_style: "GlacialIndifference-Regular.ttf"
-
-
-                ClickableImage:
-                    source: "set2.png"
-                    size_hint: None, None
-                    size: dp(350), dp(350)
-                    pos_hint: {"center_y": 0.38, "x": 0.25}
-                    on_release: app.root.current = 'camera'
-
-                MDLabel:
-                    text: "SET 2"
-                    halign: "center"
-                    pos_hint: {"center_x": 0.36, "center_y": 0.15}
-                    text_style: "GlacialIndifference-Regular.ttf"
-
-                ClickableImage:
-                    source: "set3.png"
-                    size_hint: None, None
-                    size: dp(400), dp(400)
-                    pos_hint: {"center_y": 0.42, "x": 0.40}
-                    on_release: app.root.current = 'camera'
-
-                MDLabel:
-                    text: "SET 3"
-                    halign: "center"
-                    pos_hint: {"center_x": 0.52, "center_y": 0.15}
+                    pos_hint: {"center_x": 0.30, "center_y": 0.17}
                     text_style: "GlacialIndifference-Regular.ttf"
 
                 ClickableImage:
                     source: "set4.png"
                     size_hint: None, None
                     size: dp(350), dp(350)
-                    pos_hint: {"center_y": 0.33, "x": 0.62}
-                    on_release: app.root.current = 'camera'
+                    pos_hint: {"center_y": 0.35, "x": 0.50}
+                    on_release: app.root.current = 'camera2'
 
                 MDLabel:
-                    text: "SET 4"
+                    text: "SET 2"
                     halign: "center"
-                    pos_hint: {"center_x": 0.73, "center_y": 0.15}
+                    pos_hint: {"center_x": 0.60, "center_y": 0.17}
                     text_style: "GlacialIndifference-Regular.ttf"
 
         MDNavigationDrawer:
@@ -762,11 +742,10 @@ ScreenManager:
             Camera:
                 id: cam
                 resolution: (640, 480)
-                play: True
+                play: False
                 size_hint_x: 0.7
                 allow_stretch: True
-                on_texture: root.on_texture(self, self.texture)
-
+                
             MDRoundFlatButton:
                 text: "Take a Photo"
                 size_hint: None, None
@@ -780,7 +759,7 @@ ScreenManager:
                 md_bg_color: 0.867, 0.894, 0.882, 1
                 line_color: 0, 0, 0, 1
                 radius: [24, 24, 24, 24]
-                on_release: app.take_photo()
+                on_release: root.capture()
 
         BoxLayout:
             orientation: 'vertical'
@@ -822,6 +801,87 @@ ScreenManager:
             app.root.current = 'home'
             app.root.current = 'design'
 
+<CameraPage2>:
+    name: 'camera2'
+    canvas.before:
+        Color:
+            rgba: (240/255, 246/255, 237/255, 1)  # Background color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+            
+    BoxLayout:
+        orientation: 'horizontal'
+        padding: dp(40)
+        spacing: dp(30)
+        
+        BoxLayout:
+            orientation: 'vertical'
+            padding: [dp(60), dp(30), 0, 0]
+            spacing: dp(10)
+            
+            Camera:
+                id: cam
+                resolution: (640, 480)
+                play: True
+                size_hint_x: 0.7
+                allow_stretch: True
+                on_texture: root.on_texture(self, self.texture)
+            
+            MDRoundFlatButton:
+                text: "Take a Photo"
+                size_hint: None, None
+                width: dp(200)
+                height: dp(60)
+                pos_hint: {"center_x": 0.3, "center_y": 0.15}
+                font_size: "16sp"
+                font_style: "Caption"
+                text_style: "GlacialIndifference-Regular.ttf"
+                text_color: 0, 0, 0, 1
+                md_bg_color: 0.867, 0.894, 0.882, 1
+                line_color: 0, 0, 0, 1
+                radius: [24, 24, 24, 24]
+                on_release: root.capture()
+                
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_x: None
+            width: dp(600)
+            padding: dp(55)
+            spacing: dp(45)
+            
+            GridLayout:
+                id: photo_container
+                cols: 2
+                spacing: dp(20)
+                size_hint_y: None
+                height: self.minimum_height
+    
+    MDRoundFlatButton:
+        text: "Confirm"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.7, "center_y": 0.07}
+        halign: "center"
+        font_size: 12
+        font_style: "Caption"
+        text_style: "GlacialIndifference-Regular.ttf"
+        text_color: 0, 0, 0, 1
+        md_bg_color: 0.867, 0.894, 0.882, 1
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: app.root.current = 'design_page2'
+
+    MDIconButton:
+        icon: "arrow-left"
+        theme_text_color: "Custom"
+        text_color: 0, 0, 0, 1
+        size_hint: None, None
+        size: dp(50), dp(50)
+        pos_hint: {"x": 0.1, "top": 0.95}
+        on_release: 
+            app.root.current = 'home'          
+    
 <DesignPage>:
     id: design_page
     name: 'design'
@@ -831,7 +891,7 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-    
+
     MDIconButton:
         icon: "arrow-left"
         theme_text_color: "Custom"
@@ -840,27 +900,32 @@ ScreenManager:
         size: dp(50), dp(50)
         pos_hint: {"x": 0.95, "top": 0.98}
         on_release: app.root.current = 'home'
-    
+
     FloatLayout:
         orientation: 'vertical' 
         size_hint_y: None
         height: 60
-    
-    Label:
-        text: "CUSTOMIZE"
-        bold: True
-        font_size: 15
-        color: 0, 0, 0, 1
-        height: 150
-        pos_hint: {"center_x": 0.5, "center_y": 13.5}
-    
+
+        Label:
+            text: "CUSTOMIZE"
+            bold: True
+            font_size: 35
+            color: 0, 0, 0, 1
+            height: 60
+            pos_hint: {"center_x": 0.2, "center_y": 13.5}
+
+        FitImage:
+            source: "Shutter.png"
+            size_hint: None, None
+            size: 500, 500
+            pos_hint: {"center_x": 0.5, "center_y": 14.0}
+
     BoxLayout:
         orientation: 'vertical'
         padding: [dp(10), dp(0), dp(10), dp(0)]
         pos_hint: {"center_x": 0.2, "center_y": 0.7}
-    
-        
-        
+
+
         MDFloatLayout:
             id: black_box_layout
             orientation: 'vertical'
@@ -869,9 +934,7 @@ ScreenManager:
             height: dp(450)
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
             md_bg_color: (0, 0, 0, 1)  # Default black
-    
-            
-            
+
             Image:
                 id: photo1
                 size_hint: None, None
@@ -891,48 +954,312 @@ ScreenManager:
                 allow_stretch: True
                 keep_ratio: True
                 pos_hint: {"center_x": 0.5, "top": 0.6} 
-            
+
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: None, None
+        size: dp(400), dp(100)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+        spacing: dp(10)
+
+    MDTextField:
+        id: frame_text
+        hint_text: "Enter text for your frame"
+        mode: "rectangle"
+        size_hint_x: None
+        width: 400
+        pos_hint: {"center_x": 0.45, "center_y": 0.60}
+        font_size: "12sp"
+        text_color: 0, 0, 0, 1
+        line_color_normal: 0, 0, 0, 1
+        line_color_focus: 0, 0, 0, 1
+        hint_text_color: 0, 0, 0, 1
+        helper_text_mode: "on_focus"
+
+    MDRoundFlatButton:
+        text: "Add Text to Frame"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.45, "center_y": 0.50}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1
+        md_bg_color: (0.867, 0.894, 0.882, 1)  # Light gray background
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]  # Fully rounded corners
+        on_release: root.add_text_to_frame()
+
+    MDRoundFlatButton:
+        text: "Save Photo"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.35, "center_y": 0.40}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1  # White text for better contrast
+        md_bg_color: (0.298, 0.686, 0.314, 1)  # Green color (Material Design 500)
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: root.save_photo()  
+
+    MDRoundFlatButton:
+        text: "Add to Album"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.55, "center_y": 0.40}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1  # White text for better contrast
+        md_bg_color: (0.129, 0.588, 0.953, 1)  # Blue color (Material Design 500)
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: root.add_album()
+
     ClickableImage:
         source: "black.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.35, "center_y": 0.75}
         on_release: app.change_color((0, 0, 0, 1))  # Black
-     
+
     ClickableImage:
         source: "green.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.40, "center_y": 0.75}
         on_release: app.change_color((0.5, 0.8, 0.7, 1))  # Green
-        
+
     ClickableImage:
         source: "pink.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.45, "center_y": 0.75}
         on_release: app.change_color((1, 0.8, 0.7, 1))  # Pink
-        
+
     ClickableImage:
         source: "violet.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.50, "center_y": 0.75}
         on_release: app.change_color((0.8, 0.7, 0.9, 1))  # Violet
-        
+
     ClickableImage:
         source: "yellow.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.55, "center_y": 0.75}
         on_release: app.change_color((1, 1, 0.7, 1))  # Yellow
-        
-        
+
+
 <ClickableImage@ButtonBehavior+Image>:
 
+<DesignPage2>:
+    name: 'design_page2'
+    canvas.before:
+        Color:
+            rgba: (240/255, 246/255, 237/255, 1)  # Background color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    MDIconButton:
+        icon: "arrow-left"
+        theme_text_color: "Custom"
+        text_color: 0, 0, 0, 1
+        size_hint: None, None
+        size: dp(50), dp(50)
+        pos_hint: {"x": 0.95, "top": 0.98}
+        on_release: app.root.current = 'home'
+
+    FloatLayout:
+        orientation: 'vertical' 
+        size_hint_y: None
+        height: 60
+
+        Label:
+            text: "CUSTOMIZE"
+            bold: True
+            font_size: 35
+            color: 0, 0, 0, 1
+            height: 60
+            pos_hint: {"center_x": 0.2, "center_y": 13.5}
+
+        FitImage:
+            source: "Shutter.png"
+            size_hint: None, None
+            size: 500, 500
+            pos_hint: {"center_x": 0.5, "center_y": 14.0}
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [dp(10), dp(0), dp(10), dp(0)]
+        pos_hint: {"center_x": 0.25, "center_y": 0.7}
+
+
+        MDFloatLayout:
+            id: black_box_layout
+            orientation: 'vertical'
+            size_hint: None, None
+            width: dp(500)
+            height: dp(450)
+            pos_hint: {"center_x": 0.5, "center_y": 0.8}
+            md_bg_color: (0, 0, 0, 1)  # Default black
+
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: None, None
+                width: dp(480)
+                height: dp(210)
+                pos_hint: {"center_x": 0.5, "top": 0.95}
+                spacing: dp(10)
+                
+                Image: 
+                    id: photo1
+                    size_hint: None, None
+                    size: dp(220), dp(200)
+                    allow_stretch: True
+                    
+                Image:
+                    id: photo2
+                    size_hint: None, None
+                    size: dp(220), dp(200)
+                    allow_stretch: True
+                    keep_ratio: True
+                    
+            Widget:
+                size_hint_y: None
+                height: dp(10)
+                
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: None, None
+                width: dp(480)
+                height: dp(210)
+                pos_hint: {"center_x": 0.5, "top": 0.45}
+                spacing: dp(10)
+                
+                Image:
+                    id: photo3
+                    size_hint: None, None
+                    size: dp(220), dp(200)
+                    allow_stretch: True
+                    keep_ratio: True
+                    
+                Image:
+                    id: photo4
+                    size_hint: None, None
+                    size: dp(220), dp(200)
+                    allow_stretch: True
+                    keep_ratio: True
+                
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: None, None
+        size: dp(400), dp(100)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+        spacing: dp(10)
+
+    MDTextField:
+        id: frame_text
+        hint_text: "Enter text for your frame"
+        mode: "rectangle"
+        size_hint_x: None
+        width: 400
+        pos_hint: {"center_x": 0.45, "center_y": 0.60}
+        font_size: "12sp"
+        text_color: 0, 0, 0, 1
+        line_color_normal: 0, 0, 0, 1
+        line_color_focus: 0, 0, 0, 1
+        hint_text_color: 0, 0, 0, 1
+        helper_text_mode: "on_focus"
+
+    MDRoundFlatButton:
+        text: "Add Text to Frame"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.45, "center_y": 0.50}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1
+        md_bg_color: (0.867, 0.894, 0.882, 1)  # Light gray background
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]  # Fully rounded corners
+        on_release: root.add_text_to_frame()
+
+    MDRoundFlatButton:
+        text: "Save Photo"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.35, "center_y": 0.40}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1  # White text for better contrast
+        md_bg_color: (0.298, 0.686, 0.314, 1)  # Green color (Material Design 500)
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: root.save_photo()  
+
+    MDRoundFlatButton:
+        text: "Add to Album"
+        size_hint: 0.1, None
+        height: dp(48)
+        pos_hint: {"center_x": 0.55, "center_y": 0.40}
+        font_size: 12
+        font_style: "Caption"
+        text_color: 0, 0, 0, 1  # White text for better contrast
+        md_bg_color: (0.129, 0.588, 0.953, 1)  # Blue color (Material Design 500)
+        line_color: 0, 0, 0, 1
+        radius: [24, 24, 24, 24]
+        on_release: root.add_album()
+
+    ClickableImage:
+        source: "black.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.35, "center_y": 0.75}
+        on_release: 
+            root.change_frame_color((0, 0, 0, 1))
+            app.change_color((0, 0, 0, 1))  # Black
+
+    ClickableImage:
+        source: "green.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.40, "center_y": 0.75}
+        on_release: 
+            root.change_frame_color((0.5, 0.8, 0.7, 1))
+            app.change_color((0.5, 0.8, 0.7, 1))  # Green
+
+    ClickableImage:
+        source: "pink.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.45, "center_y": 0.75}
+        on_release: 
+            root.change_frame_color((1, 0.8, 0.7, 1))
+            app.change_color((1, 0.8, 0.7, 1))  # Pink
+
+    ClickableImage:
+        source: "violet.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.50, "center_y": 0.75}
+        on_release: 
+            root.change_frame_color((0.8, 0.7, 0.9, 1))
+            app.change_color((0.8, 0.7, 0.9, 1))  # Violet
+
+    ClickableImage:
+        source: "yellow.png"
+        size_hint: None, None
+        size: (150, 150) 
+        pos_hint: {"center_x": 0.55, "center_y": 0.75}
+        on_release:
+            root.change_frame_color((1, 1, 0.7, 1))
+            app.change_color((1, 1, 0.7, 1))  # Yellow
+
+<ClickableImage@ButtonBehavior+Image>:            
+
 '''
-
-
 
 
 class ArrowButton(Button):
@@ -1277,6 +1604,93 @@ class CameraPage(Screen):
         self.ids.photo_list.add_widget(new_img)
 
 
+class CameraPage2(Screen):
+    photo1_source = StringProperty('')
+    photo2_source = StringProperty('')
+    photo3_source = StringProperty('')
+    photo4_source = StringProperty('')
+    captured_photos = ListProperty([])
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.captured_photos = []
+
+    def crop_image_to_box(self, filename, target_width=160, target_height=200):
+        """Corrected method name and implementation"""
+        try:
+            img = PILImage.open(filename)
+            img = img.resize((800, 1000), PILImage.LANCZOS)
+            img.save(filename)
+            return True
+        except Exception as e:
+            print(f"Error cropping image: {e}")
+            return False
+
+    def capture(self):
+        camera = self.ids.cam
+        if not camera.texture:
+            print("Camera texture not available!")
+            return
+
+        try:
+            # Create photos directory if needed
+            os.makedirs("captured_photos", exist_ok=True)
+
+            # Generate unique filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"captured_photos/photo_{timestamp}.png"
+
+            # Capture photo
+            camera.export_to_png(filename)
+
+            # Process image
+            if not self.crop_image_to_box(filename):
+                return
+
+            # Update photo collection (keep only last 4)
+            self.captured_photos.append(filename)
+            if len(self.captured_photos) > 4:
+                self.captured_photos.pop(0)
+
+            # Store photos in app for design page to access
+            App.get_running_app().captured_photos = self.captured_photos[-4:]
+
+            # Update display but DON'T auto-redirect
+            self.update_photo_display()
+
+        except Exception as e:
+            print(f"Error capturing photo: {e}")
+
+    def update_photo_display(self):
+        """Update all photo displays"""
+        photos = [self.photo1_source, self.photo2_source,
+                  self.photo3_source, self.photo4_source]
+
+        # Clear current displays
+        for widget in self.ids.photo_container.children[:]:
+            self.ids.photo_container.remove_widget(widget)
+
+        # Add new photo displays
+        for i, photo in enumerate(self.captured_photos):
+            img = Image(
+                source=photo,
+                size_hint=(None, None),
+                size=(dp(240), dp(300)),
+                allow_stretch=True,
+                keep_ratio=True
+            )
+            self.ids.photo_container.add_widget(img)
+
+        # Update properties
+        if len(self.captured_photos) > 0:
+            self.photo1_source = self.captured_photos[0]
+        if len(self.captured_photos) > 1:
+            self.photo2_source = self.captured_photos[1]
+        if len(self.captured_photos) > 2:
+            self.photo3_source = self.captured_photos[2]
+        if len(self.captured_photos) > 3:
+            self.photo4_source = self.captured_photos[3]
+
 class ClickableImage(ButtonBehavior, Image):
     def on_press(self):
         print("Image Clicked!")
@@ -1299,8 +1713,69 @@ class CameraWidget(Image):
 
 
 class DesignPage(Screen):
-    pass
+    def add_text_to_frame(self):
+        """Add text to the frame below the photos"""
+        text = self.ids.frame_text.text
+        if not text:
+            return  # Don't add empty text
 
+        # Create a label for the text
+        text_label = Label(
+            text=text,
+            color=(1, 1, 1, 1),  # White text
+            font_size=dp(20),
+            size_hint=(None, None),
+            size=(dp(400), dp(50)),
+            pos_hint={'center_x': 0.5, 'y': 0.1}
+        )
+
+        # Add it to the black frame layout
+        self.ids.black_box_layout.add_widget(text_label)
+
+        # Clear the text input
+        self.ids.frame_text.text = "design_page2"
+
+class DesignPage2(Screen):
+    def on_pre_enter(self):
+        # Get the stored photos from the app
+        app = App.get_running_app()
+        photos = getattr(app, 'captured_photos', [])
+
+        # Update all four image widgets
+        for i in range(1, 5):
+            photo_id = f'photo{i}'
+            if hasattr(self.ids, photo_id):
+                photo_widget = getattr(self.ids, photo_id)
+                if i <= len(photos):
+                    photo_widget.source = photos[i - 1]
+                else:
+                    photo_widget.source = ''
+
+    def go_to_design(self):
+        design_screen = self.manager.get_screen('design')
+        photos = self.captured_photos[-4:]  # Get last 4 photos
+
+        design_screen.ids.photo1.source = photos[0] if len(photos) > 0 else ''
+        design_screen.ids.photo2.source = photos[1] if len(photos) > 1 else ''
+        design_screen.ids.photo3.source = photos[2] if len(photos) > 2 else ''
+        design_screen.ids.photo4.source = photos[3] if len(photos) > 3 else ''
+
+        self.manager.current = 'design'
+
+    def update_photos(self, photo_paths):
+        """Manually update photos when coming from camera page"""
+        for i in range(1, 5):
+            widget = getattr(self.ids, f'photo{i}', None)
+            if widget and i <= len(photo_paths):
+                widget.source = photo_paths[i - 1]
+            elif widget:
+                widget.source = ''
+
+    def change_frame_color(self, color):
+        """Method to change the frame color specifically for this screen"""
+        if hasattr(self.ids, 'black_box_layout'):
+            self.ids.black_box_layout.md_bg_color = color
+            print(f"Color changed to {color}")
 
 class PhotoDisplay(BoxLayout):
     def __init__(self, **kwargs):
@@ -1320,6 +1795,64 @@ class PhotoDisplay(BoxLayout):
     def update_photos(self, photo1_path, photo2_path):
         self.photo1.source = photo1_path
         self.photo2.source = photo2_path
+
+    def save_frame(self):
+        """Save the frame image to the user's Pictures directory"""
+        try:
+            # Create timestamp for filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"Frame_{timestamp}.png"
+
+            # Use the system's Pictures directory
+            pictures_dir = os.path.join(os.path.expanduser('~'), 'Pictures')
+            os.makedirs(pictures_dir, exist_ok=True)  # Create if doesn't exist
+            save_path = os.path.join(pictures_dir, filename)
+
+            # Get the frame widget
+            frame = self.ids.black_box_layout
+
+            # Ensure proper widget size
+            frame.size = (frame.width, frame.height)
+
+            # Create FBO and capture the frame
+            fbo = Fbo(size=frame.size)
+            with fbo:
+                Color(0, 0, 0, 1)  # Black background
+                Rectangle(size=frame.size)
+                for child in frame.children:
+                    child.draw(fbo)  # Draw all child widgets
+
+            # Export to image
+            fbo.draw()
+            texture = fbo.texture
+            core_img = CoreImage(texture, flipped=False)
+            core_img.save(save_path)
+
+            # Show confirmation
+            self.show_save_confirmation(save_path)
+            return True
+
+        except Exception as e:
+            print(f"Save error: {e}")
+            self.show_save_confirmation(None)
+            return False
+
+    def show_save_confirmation(self, path):
+        """Show save confirmation dialog"""
+        from kivymd.uix.dialog import MDDialog
+
+        dialog = MDDialog(
+            title="Saved Successfully!" if path else "Save Failed",
+            text=f"Frame saved to:\n{path}" if path else "Could not save the frame",
+            buttons=[
+                MDFlatButton(
+                    text="OK",
+                    on_release=lambda x: dialog.dismiss()
+                )
+            ]
+        )
+        dialog.open()
+
 
 class Photobooth(MDApp):
     def build(self):
@@ -1388,14 +1921,22 @@ class Photobooth(MDApp):
         photo_list.add_widget(img)
 
     def change_color(self, color):
-        design_screen = self.root.get_screen('design')
-        black_box = design_screen.ids.black_box_layout
+        def change_color(self, color):
+            print(f"Attempting to change color to {color}")  # Debug print
+            current_screen = self.root.current
+            print(f"Current screen is {current_screen}")  # Debug print
 
-        if black_box:
-            black_box.md_bg_color = color
-            print("Color changed successfully!")
-        else:
-            print("ERROR: 'black_box_layout' not found!")
+            try:
+                screen = self.root.get_screen(current_screen)
+                if hasattr(screen.ids, 'black_box_layout'):
+                    screen.ids.black_box_layout.md_bg_color = color
+                    print(f"Color changed on {current_screen}!")
+                else:
+                    print("No black_box_layout found on current screen")
+            except Exception as e:
+                print(f"Error changing color: {e}")
+
+
 
 config = {
     "apiKey": "AIzaSyAWE6tdwKl9lrLfQidIcd4wAbiWpPHejVc",
@@ -1407,14 +1948,11 @@ config = {
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
-
-
 cred = credentials.Certificate(
     "C:/Users/lauronrochelle22/Downloads/shutterbooth-e72ed-firebase-adminsdk-fbsvc-005a141dfd.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://shutterbooth-e72ed-default-rtdb.asia-southeast1.firebasedatabase.app/users'
 })
-
 
 if __name__ == "__main__":
     Photobooth().run()
