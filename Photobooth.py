@@ -242,7 +242,7 @@ ScreenManager:
         hint_text_color: 0, 0, 0, 1
         helper_text_mode: "on_focus"
 
-        
+
 
     MDTextField:
         id: confirm_password
@@ -460,7 +460,7 @@ ScreenManager:
                             icon_color: "black"
                             pos_hint: {"center_y": 13.20, "center_x": 0.95} 
                             on_release: nav_drawer.set_state("toggle")             
-            
+
                 ClickableImage:
                     source: "set1 (2).png"
                     size_hint: None, None
@@ -564,8 +564,8 @@ ScreenManager:
         Image:
             source: 'Profile.png'
             size_hint: None, None
-            size: 60, 60
-            pos_hint: {"y": 11, "x": 3}
+            size: 100,100
+            pos_hint: {"y": 10.8, "x": 4}
 
         FloatLayout:
             orientation: 'vertical'
@@ -573,19 +573,19 @@ ScreenManager:
             height: 60
 
             Label:
-                text: "FULL NAME"
+                text: "USERNAME"
                 bold: True
-                font_size: 18
+                font_size: 25
                 color: 0, 0, 0, 1
                 height: 25
-                pos_hint: {"center_x": 0.02, "center_y": 15.1}
+                pos_hint: {"center_x": 0.03, "center_y": 15.1}
 
             Label:
-                text: "@USERNAME"
-                font_size: 14
+                text: "Email"
+                font_size: 18
                 color: 0, 0, 0.5, 1
                 height: 20
-                pos_hint: {"center_x": 0.02, "center_y": 14.8}
+                pos_hint: {"center_x": 0.03, "center_y": 14.6}
 
             Label:
                 text: "PHOTOS"
@@ -641,12 +641,12 @@ ScreenManager:
             size_hint_y: None
             height: 30       
             pos_hint: {"center_x": 0.09, "center_y": 15.2}
-              
+
         ScrollView:
             size_hint: (0.9, None)
             height: dp(400)
-            pos_hint: {'center_y': 0.90, 'x': 0.15}
-            
+            pos_hint: {'center_y': 9.0, 'x': 0.05}
+
             MDLabel:
                 text: """ShutterBooth is dedicated to bringing people together through fun, creative, and high-quality photo booth experiences. Our app is designed to make capturing memories effortless and enjoyable, whether at events, gatherings, or just everyday moments. With customizable features, instant sharing options, and a user-friendly interface, we empower users to express themselves and preserve special occasions in a unique way. At ShutterBooth, we believe every snapshot tells a story—let's create yours together!"""
                 font_size: "16sp"
@@ -829,7 +829,7 @@ ScreenManager:
         Rectangle:
             size: self.size
             pos: self.pos
-    
+
     MDIconButton:
         icon: "arrow-left"
         theme_text_color: "Custom"
@@ -838,12 +838,12 @@ ScreenManager:
         size: dp(50), dp(50)
         pos_hint: {"x": 0.95, "top": 0.98}
         on_release: app.root.current = 'home'
-    
+
     FloatLayout:
         orientation: 'vertical' 
         size_hint_y: None
         height: 60
-    
+
         Label:
             text: "CUSTOMIZE"
             bold: True
@@ -851,19 +851,19 @@ ScreenManager:
             color: 0, 0, 0, 1
             height: 60
             pos_hint: {"center_x": 0.2, "center_y": 13.5}
-    
+
         FitImage:
             source: "Shutter.png"
             size_hint: None, None
             size: 500, 500
             pos_hint: {"center_x": 0.5, "center_y": 14.0}
-        
+
     BoxLayout:
         orientation: 'vertical'
         padding: [dp(10), dp(0), dp(10), dp(0)]
         pos_hint: {"center_x": 0.2, "center_y": 0.7}
-    
-        
+
+
         MDFloatLayout:
             id: black_box_layout
             orientation: 'vertical'
@@ -872,9 +872,9 @@ ScreenManager:
             height: dp(450)
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
             md_bg_color: (0, 0, 0, 1)  # Default black
-    
-            
-            
+
+
+
             Image:
                 id: photo1
                 size_hint: None, None
@@ -894,7 +894,7 @@ ScreenManager:
                 allow_stretch: True
                 keep_ratio: True
                 pos_hint: {"center_x": 0.5, "top": 0.6} 
-    
+
     BoxLayout:
         orientation: 'vertical'
         size_hint: None, None
@@ -928,7 +928,7 @@ ScreenManager:
         line_color: 0, 0, 0, 1
         radius: [24, 24, 24, 24]  # Fully rounded corners
         on_release: root.add_text_to_frame()
-    
+
     MDRoundFlatButton:
         text: "Save Photo"
         size_hint: 0.1, None
@@ -941,7 +941,7 @@ ScreenManager:
         line_color: 0, 0, 0, 1
         radius: [24, 24, 24, 24]
         on_release: root.save_photo()  
-    
+
     MDRoundFlatButton:
         text: "Add to Album"
         size_hint: 0.1, None
@@ -954,45 +954,45 @@ ScreenManager:
         line_color: 0, 0, 0, 1
         radius: [24, 24, 24, 24]
         on_release: root.add_album()
-          
+
     ClickableImage:
         source: "black.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.35, "center_y": 0.75}
         on_release: app.change_color((0, 0, 0, 1))  # Black
-     
+
     ClickableImage:
         source: "green.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.40, "center_y": 0.75}
         on_release: app.change_color((0.5, 0.8, 0.7, 1))  # Green
-        
+
     ClickableImage:
         source: "pink.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.45, "center_y": 0.75}
         on_release: app.change_color((1, 0.8, 0.7, 1))  # Pink
-        
+
     ClickableImage:
         source: "violet.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.50, "center_y": 0.75}
         on_release: app.change_color((0.8, 0.7, 0.9, 1))  # Violet
-        
+
     ClickableImage:
         source: "yellow.png"
         size_hint: None, None
         size: (150, 150) 
         pos_hint: {"center_x": 0.55, "center_y": 0.75}
         on_release: app.change_color((1, 1, 0.7, 1))  # Yellow
-        
-    
-        
-        
+
+
+
+
 <ClickableImage@ButtonBehavior+Image>:
 
 '''
@@ -1272,7 +1272,6 @@ class LogInForm(Screen):
 class HomePage(Screen):
     pass
 
-
     def show_logout_confirmation(self):
         self.dialog = MDDialog(
             title="Logout Confirmation",
@@ -1298,6 +1297,7 @@ class HomePage(Screen):
         self.dialog.dismiss()
         # Perform any logout operations here (clear session, etc.)
         self.manager.current = 'main'  # Assuming your login screen is named 'main'
+
 
 class AccountPage(Screen):
     pass
@@ -1413,7 +1413,6 @@ class DesignPage(Screen):
         self.ids.frame_text.text = ""
 
 
-
 class PhotoDisplay(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1490,6 +1489,7 @@ class PhotoDisplay(BoxLayout):
         )
         dialog.open()
 
+
 class Photobooth(MDApp):
     def build(self):
         Window.size = (1024, 768)
@@ -1503,8 +1503,6 @@ class Photobooth(MDApp):
 
     def on_register_click(self):
         print("Register button clicked!")
-
-
 
     def forgot_password(self):
         print("Forgot Password clicked!")
