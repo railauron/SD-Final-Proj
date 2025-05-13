@@ -1,6 +1,5 @@
 import email
 from cmath import rect
-
 import cv2
 from kivy.lang import Builder
 from kivymd.app import MDApp
@@ -62,6 +61,9 @@ ScreenManager:
     CameraPage:
     DesignPage:
     ForgotPassword:
+    AccountPage:
+    AboutPage:
+    ContactPage:
 
 <ArrowButton@Button>:
     size_hint: None, None
@@ -232,21 +234,15 @@ ScreenManager:
         pos_hint: {"center_x": 0.5, "center_y": 0.35}
         font_size: "12sp"
         password: True
+        icon_right: "eye-off"
+        on_icon_right: app.toggle_password_visibility(self)
         text_color: 0, 0, 0, 1
         line_color_normal: 0, 0, 0, 1
         line_color_focus: 0, 0, 0, 1
         hint_text_color: 0, 0, 0, 1
         helper_text_mode: "on_focus"
 
-        MDIconButton:
-            id: toggle_icon
-            icon: "eye-off"
-            pos_hint: {"center_x": 0.95, "center_y": 0.5}
-            size_hint: None, None
-            size: dp(30), dp(30)
-            theme_text_color: "Custom"
-            text_color: 0, 0, 0, 1
-            on_release: app.toggle_password_visibility()
+        
 
     MDTextField:
         id: confirm_password
@@ -464,7 +460,7 @@ ScreenManager:
                             icon_color: "black"
                             pos_hint: {"center_y": 13.20, "center_x": 0.95} 
                             on_release: nav_drawer.set_state("toggle")             
-
+            
                 ClickableImage:
                     source: "set1 (2).png"
                     size_hint: None, None
@@ -488,7 +484,7 @@ ScreenManager:
                 MDLabel:
                     text: "SET 2"
                     halign: "center"
-                    pos_hint: {"center_x": 0.60, "center_y": 0.17}
+                    pos_hint: {"center_x": 0.62, "center_y": 0.17}
                     text_style: "GlacialIndifference-Regular.ttf"
 
         MDNavigationDrawer:
@@ -496,33 +492,50 @@ ScreenManager:
             anchor: 'right'
             md_bg_color: 146/255, 170/255, 131/255, 1
 
-            MDList:
-                OneLineListItem:
-                    text: "ACCOUNT"
-                    theme_text_color: "Custom"
-                    text_color: "black"
-                    pos_hint: {"top": 15}
-                    size_hint_y: None
-                    on_release: app.root.current = 'account'    
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: dp(10)
+                padding: dp(10)
 
+                # Top section with menu items
                 MDList:
+                    OneLineListItem:
+                        text: "ACCOUNT"
+                        theme_text_color: "Custom"
+                        text_color: "black"
+                        on_release: app.root.current = 'account'    
+
                     OneLineListItem:
                         text: "ABOUT"
                         theme_text_color: "Custom"
                         text_color: "black"
-                        pos_hint: {"top": 3}
-                        size_hint_y: None
                         on_release: app.root.current = 'about'      
 
-                    MDList:
-                        OneLineListItem:
-                            text: "CONTACT"
-                            theme_text_color: "Custom"
-                            text_color: "black"
-                            pos_hint: {"top": 3}
-                            size_hint_y: None
-                            on_release: app.root.current = 'contact'            
+                    OneLineListItem:
+                        text: "CONTACT"
+                        theme_text_color: "Custom"
+                        text_color: "black"
+                        on_release: app.root.current = 'contact'
 
+                # Spacer to push content up and logout button down
+                Widget:
+
+                # Bottom section with logout button
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(56)
+                    padding: dp(10)
+                    pos_hint: {"right": 1}
+                    spacing: dp(10)
+
+                    Widget:  # This will push the icon to the right
+
+                    MDIconButton:
+                        icon: "logout"
+                        theme_icon_color: "Custom"
+                        icon_color: "black"
+                        pos_hint: {"center_y": 0.5, "right": 1}
+                        on_release: root.show_logout_confirmation()
 <AccountPage>:
     name: 'account'
     canvas.before:
@@ -604,15 +617,16 @@ ScreenManager:
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
-        height: 120
-        padding: 20
-        spacing: 15 
+        height: dp(120)
+        padding: dp(20)
+        spacing: dp(15)
+        pos_hint: {'top': 1}  # Anchor to top
 
         Image:
             source: 'About.png'
             size_hint: None, None
-            size: 60, 60
-            pos_hint: {"y": 10.8, "x": 3}               
+            size: dp(60), dp(60)
+            pos_hint: {'center_y': 0.5, 'x': 0.08}
 
     FloatLayout:
         orientation: 'vertical'
@@ -626,17 +640,23 @@ ScreenManager:
             color: 0, 0, 0, 1
             size_hint_y: None
             height: 30       
-            pos_hint: {"center_x": 0.08, "center_y": 15.2}
-
-        Label:
-            text: """ShutterBooth is dedicated to bringing people together through fun, creative, and high-quality photo booth experiences.Our app is designed to make capturing memories effortless and enjoyable, whether at events, gatherings, or just everyday moments. With customizable features, instant sharing options,and a user-friendly interface, we empower users to express themselves and preserve special occasions in a unique way. At ShutterBooth, we believe every snapshot tells a story—let’s create yours together! """
-            bold: True
-            font_size: 25
-            color: 0, 0, 0, 1
-            size_hint_y: None
-            height: 30       
-            pos_hint: {"center_x": 0.08, "center_y": 15.2}
-
+            pos_hint: {"center_x": 0.09, "center_y": 15.2}
+              
+        ScrollView:
+            size_hint: (0.9, None)
+            height: dp(400)
+            pos_hint: {'center_y': 0.90, 'x': 0.15}
+            
+            MDLabel:
+                text: """ShutterBooth is dedicated to bringing people together through fun, creative, and high-quality photo booth experiences. Our app is designed to make capturing memories effortless and enjoyable, whether at events, gatherings, or just everyday moments. With customizable features, instant sharing options, and a user-friendly interface, we empower users to express themselves and preserve special occasions in a unique way. At ShutterBooth, we believe every snapshot tells a story—let's create yours together!"""
+                font_size: "16sp"
+                color: 0, 0, 0, 1
+                size_hint_y: None
+                height: self.texture_size[1]
+                padding: [dp(10), dp(10)]
+                halign: "left"
+                valign: "top"
+                text_size: self.width - dp(20), None
 <ContactPage>:
     name: 'contact'
     canvas.before:
@@ -970,6 +990,8 @@ ScreenManager:
         pos_hint: {"center_x": 0.55, "center_y": 0.75}
         on_release: app.change_color((1, 1, 0.7, 1))  # Yellow
         
+    
+        
         
 <ClickableImage@ButtonBehavior+Image>:
 
@@ -1251,6 +1273,32 @@ class HomePage(Screen):
     pass
 
 
+    def show_logout_confirmation(self):
+        self.dialog = MDDialog(
+            title="Logout Confirmation",
+            text="Are you sure you want to logout?",
+            buttons=[
+                MDFlatButton(
+                    text="NO",
+                    theme_text_color="Custom",
+                    text_color="black",
+                    on_release=lambda x: self.dialog.dismiss()
+                ),
+                MDFlatButton(
+                    text="YES",
+                    theme_text_color="Custom",
+                    text_color="black",
+                    on_release=lambda x: self.confirm_logout()
+                ),
+            ],
+        )
+        self.dialog.open()
+
+    def confirm_logout(self):
+        self.dialog.dismiss()
+        # Perform any logout operations here (clear session, etc.)
+        self.manager.current = 'main'  # Assuming your login screen is named 'main'
+
 class AccountPage(Screen):
     pass
 
@@ -1456,16 +1504,7 @@ class Photobooth(MDApp):
     def on_register_click(self):
         print("Register button clicked!")
 
-    def toggle_password_visibility(self):
-        field = self.root.ids.password_field
-        icon = self.root.ids.toggle_icon
 
-        if field.password:
-            field.password = False
-            field.right_icon = "eye"
-        else:
-            field.password = True
-            field.right_icon = "eye-off"
 
     def forgot_password(self):
         print("Forgot Password clicked!")
