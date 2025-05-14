@@ -1,7 +1,9 @@
 import email
 from cmath import rect
+from itertools import count
 
 import cv2
+from cv2.gapi.streaming import timestamp
 from kivy.lang import Builder
 from kivymd.app import MDApp
 from kivy.core.window import Window
@@ -23,7 +25,7 @@ from kivy.uix.image import Image
 from kivy.uix.camera import Camera
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
-from kivy.properties import StringProperty, ListProperty
+from kivy.properties import StringProperty, ListProperty, NumericProperty
 from kivy.app import App
 from datetime import datetime
 from PIL import Image as PILImage
@@ -51,6 +53,7 @@ from kivy.graphics import Fbo, Color, Rectangle
 from kivy.core.image import Image as CoreImage
 from datetime import datetime
 from kivy.uix.popup import Popup
+from kivy.uix.image import AsyncImage
 
 KV = '''
 ScreenManager:
@@ -60,10 +63,12 @@ ScreenManager:
     LogInForm:
     HomePage:
     CameraPage:
-    CameraPage2:
     DesignPage:
     DesignPage2:
     ForgotPassword:
+    AccountPage:
+    AboutPage:
+    ContactPage:
 
 <ArrowButton@Button>:
     size_hint: None, None
@@ -234,21 +239,15 @@ ScreenManager:
         pos_hint: {"center_x": 0.5, "center_y": 0.35}
         font_size: "12sp"
         password: True
+        icon_right: "eye-off"
+        on_icon_right: app.toggle_password_visibility(self)
         text_color: 0, 0, 0, 1
         line_color_normal: 0, 0, 0, 1
         line_color_focus: 0, 0, 0, 1
         hint_text_color: 0, 0, 0, 1
         helper_text_mode: "on_focus"
 
-        MDIconButton:
-            id: toggle_icon
-            icon: "eye-off"
-            pos_hint: {"center_x": 0.95, "center_y": 0.5}
-            size_hint: None, None
-            size: dp(30), dp(30)
-            theme_text_color: "Custom"
-            text_color: 0, 0, 0, 1
-            on_release: app.toggle_password_visibility()
+
 
     MDTextField:
         id: confirm_password
@@ -472,7 +471,9 @@ ScreenManager:
                     size_hint: None, None
                     size: dp(300), dp(300)
                     pos_hint: {"center_y": 0.37, "x": 0.20}
-                    on_release: app.root.current = 'camera'
+                    on_release: 
+                        app.set_photo_mode(1)
+                        app.root.current = 'camera'
 
                 MDLabel:
                     text: "SET 1"
@@ -485,12 +486,14 @@ ScreenManager:
                     size_hint: None, None
                     size: dp(350), dp(350)
                     pos_hint: {"center_y": 0.35, "x": 0.50}
-                    on_release: app.root.current = 'camera2'
+                    on_release: 
+                        app.set_photo_mode(2)
+                        app.root.current = 'camera'
 
                 MDLabel:
                     text: "SET 2"
                     halign: "center"
-                    pos_hint: {"center_x": 0.60, "center_y": 0.17}
+                    pos_hint: {"center_x": 0.62, "center_y": 0.17}
                     text_style: "GlacialIndifference-Regular.ttf"
 
         MDNavigationDrawer:
@@ -498,33 +501,50 @@ ScreenManager:
             anchor: 'right'
             md_bg_color: 146/255, 170/255, 131/255, 1
 
-            MDList:
-                OneLineListItem:
-                    text: "ACCOUNT"
-                    theme_text_color: "Custom"
-                    text_color: "black"
-                    pos_hint: {"top": 15}
-                    size_hint_y: None
-                    on_release: app.root.current = 'account'    
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: dp(10)
+                padding: dp(10)
 
+                # Top section with menu items
                 MDList:
+                    OneLineListItem:
+                        text: "ACCOUNT"
+                        theme_text_color: "Custom"
+                        text_color: "black"
+                        on_release: app.root.current = 'account'    
+
                     OneLineListItem:
                         text: "ABOUT"
                         theme_text_color: "Custom"
                         text_color: "black"
-                        pos_hint: {"top": 3}
-                        size_hint_y: None
                         on_release: app.root.current = 'about'      
 
-                    MDList:
-                        OneLineListItem:
-                            text: "CONTACT"
-                            theme_text_color: "Custom"
-                            text_color: "black"
-                            pos_hint: {"top": 3}
-                            size_hint_y: None
-                            on_release: app.root.current = 'contact'            
+                    OneLineListItem:
+                        text: "CONTACT"
+                        theme_text_color: "Custom"
+                        text_color: "black"
+                        on_release: app.root.current = 'contact'
 
+                # Spacer to push content up and logout button down
+                Widget:
+
+                # Bottom section with logout button
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(56)
+                    padding: dp(10)
+                    pos_hint: {"right": 1}
+                    spacing: dp(10)
+
+                    Widget:  # This will push the icon to the right
+
+                    MDIconButton:
+                        icon: "logout"
+                        theme_icon_color: "Custom"
+                        icon_color: "black"
+                        pos_hint: {"center_y": 0.5, "right": 1}
+                        on_release: root.show_logout_confirmation()
 <AccountPage>:
     name: 'account'
     canvas.before:
@@ -553,8 +573,8 @@ ScreenManager:
         Image:
             source: 'Profile.png'
             size_hint: None, None
-            size: 60, 60
-            pos_hint: {"y": 11, "x": 3}
+            size: 100,100
+            pos_hint: {"y": 10.8, "x": 4}
 
         FloatLayout:
             orientation: 'vertical'
@@ -562,19 +582,19 @@ ScreenManager:
             height: 60
 
             Label:
-                text: "FULL NAME"
+                text: "USERNAME"
                 bold: True
-                font_size: 18
+                font_size: 25
                 color: 0, 0, 0, 1
                 height: 25
-                pos_hint: {"center_x": 0.02, "center_y": 15.1}
+                pos_hint: {"center_x": 0.03, "center_y": 15.1}
 
             Label:
-                text: "@USERNAME"
-                font_size: 14
+                text: "Email"
+                font_size: 18
                 color: 0, 0, 0.5, 1
                 height: 20
-                pos_hint: {"center_x": 0.02, "center_y": 14.8}
+                pos_hint: {"center_x": 0.03, "center_y": 14.6}
 
             Label:
                 text: "PHOTOS"
@@ -606,15 +626,16 @@ ScreenManager:
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
-        height: 120
-        padding: 20
-        spacing: 15 
+        height: dp(120)
+        padding: dp(20)
+        spacing: dp(15)
+        pos_hint: {'top': 1}  # Anchor to top
 
         Image:
             source: 'About.png'
             size_hint: None, None
-            size: 60, 60
-            pos_hint: {"y": 10.8, "x": 3}               
+            size: dp(60), dp(60)
+            pos_hint: {'center_y': 0.5, 'x': 0.08}
 
     FloatLayout:
         orientation: 'vertical'
@@ -628,17 +649,23 @@ ScreenManager:
             color: 0, 0, 0, 1
             size_hint_y: None
             height: 30       
-            pos_hint: {"center_x": 0.08, "center_y": 15.2}
+            pos_hint: {"center_x": 0.09, "center_y": 15.2}
 
-        Label:
-            text: """ShutterBooth is dedicated to bringing people together through fun, creative, and high-quality photo booth experiences.Our app is designed to make capturing memories effortless and enjoyable, whether at events, gatherings, or just everyday moments. With customizable features, instant sharing options,and a user-friendly interface, we empower users to express themselves and preserve special occasions in a unique way. At ShutterBooth, we believe every snapshot tells a story—let’s create yours together! """
-            bold: True
-            font_size: 25
-            color: 0, 0, 0, 1
-            size_hint_y: None
-            height: 30       
-            pos_hint: {"center_x": 0.08, "center_y": 15.2}
+        ScrollView:
+            size_hint: (0.9, None)
+            height: dp(400)
+            pos_hint: {'center_y': 9.0, 'x': 0.05}
 
+            MDLabel:
+                text: """ShutterBooth is dedicated to bringing people together through fun, creative, and high-quality photo booth experiences. Our app is designed to make capturing memories effortless and enjoyable, whether at events, gatherings, or just everyday moments. With customizable features, instant sharing options, and a user-friendly interface, we empower users to express themselves and preserve special occasions in a unique way. At ShutterBooth, we believe every snapshot tells a story—let's create yours together!"""
+                font_size: "16sp"
+                color: 0, 0, 0, 1
+                size_hint_y: None
+                height: self.texture_size[1]
+                padding: [dp(10), dp(10)]
+                halign: "left"
+                valign: "top"
+                text_size: self.width - dp(20), None
 <ContactPage>:
     name: 'contact'
     canvas.before:
@@ -722,6 +749,7 @@ ScreenManager:
 
 <CameraPage>:
     name: 'camera'
+    max_photos: 2  
     canvas.before:
         Color:
             rgba: (240/255, 246/255, 237/255, 1)
@@ -740,95 +768,14 @@ ScreenManager:
             spacing: dp(10)
 
             Camera:
-                id: cam
-                resolution: (640, 480)
-                play: False
-                size_hint_x: 0.7
-                allow_stretch: True
-                
-            MDRoundFlatButton:
-                text: "Take a Photo"
-                size_hint: None, None
-                width: dp(200)
-                height: dp(60)
-                pos_hint: {"center_x": 0.3, "center_y": 0.15}
-                font_size: "16sp"
-                font_style: "Caption"
-                text_style: "GlacialIndifference-Regular.ttf"
-                text_color: 0, 0, 0, 1
-                md_bg_color: 0.867, 0.894, 0.882, 1
-                line_color: 0, 0, 0, 1
-                radius: [24, 24, 24, 24]
-                on_release: root.capture()
-
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint_x: None
-            width: dp(600)  # Wider space for photos
-            padding: dp(55)
-            spacing: dp(45)
-
-            MDStackLayout:
-                id: photo_list
-                orientation: 'lr-tb'
-                size_hint_y: None
-                height: self.minimum_height
-                spacing: dp(0)  # Reduced spacing between the photos
-
-    MDRoundFlatButton:
-        text: "Confirm"
-        size_hint: 0.1, None
-        height: dp(48)
-        pos_hint: {"center_x": 0.7, "center_y": 0.07}
-        halign: "center"
-        font_size: 12
-        font_style: "Caption"
-        text_style: "GlacialIndifference-Regular.ttf"
-        text_color: 0, 0, 0, 1
-        md_bg_color: 0.867, 0.894, 0.882, 1
-        line_color: 0, 0, 0, 1
-        radius: [24, 24, 24, 24]
-        on_release: app.root.current = 'design'
-
-    MDIconButton:
-        icon: "arrow-left"
-        theme_text_color: "Custom"
-        text_color: 0, 0, 0, 1
-        size_hint: None, None
-        size: dp(50), dp(50)
-        pos_hint: {"x": 0.1, "top": 0.95}
-        on_release: 
-            app.root.current = 'home'
-            app.root.current = 'design'
-
-<CameraPage2>:
-    name: 'camera2'
-    canvas.before:
-        Color:
-            rgba: (240/255, 246/255, 237/255, 1)  # Background color
-        Rectangle:
-            size: self.size
-            pos: self.pos
-            
-    BoxLayout:
-        orientation: 'horizontal'
-        padding: dp(40)
-        spacing: dp(30)
-        
-        BoxLayout:
-            orientation: 'vertical'
-            padding: [dp(60), dp(30), 0, 0]
-            spacing: dp(10)
-            
-            Camera:
-                id: cam
+                id: cam_widget
                 resolution: (640, 480)
                 play: True
                 size_hint_x: 0.7
                 allow_stretch: True
-                on_texture: root.on_texture(self, self.texture)
-            
+
             MDRoundFlatButton:
+                id:capture_btn
                 text: "Take a Photo"
                 size_hint: None, None
                 width: dp(200)
@@ -842,22 +789,30 @@ ScreenManager:
                 line_color: 0, 0, 0, 1
                 radius: [24, 24, 24, 24]
                 on_release: root.capture()
-                
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint_x: None
-            width: dp(600)
-            padding: dp(55)
-            spacing: dp(45)
+                disabled: False
+
+        ScrollView:
+            size_hint: 1, 1
+            do_scroll_x: False
             
-            GridLayout:
+            BoxLayout:
                 id: photo_container
-                cols: 2
+                orientation: 'vertical' if app.current_set == 1 else 'horizontal'
                 spacing: dp(20)
+                padding: dp(10)
                 size_hint_y: None
                 height: self.minimum_height
-    
-    MDRoundFlatButton:
+                
+                GridLayout:
+                    id: grid_container
+                    cols: 2
+                    spacing: dp(20)
+                    size_hint_y: None
+                    height: self.minimum_height
+                    visible: app.current_set == 2
+
+    MDRoundFlatButton:   
+        id: confirm_btn
         text: "Confirm"
         size_hint: 0.1, None
         height: dp(48)
@@ -870,7 +825,8 @@ ScreenManager:
         md_bg_color: 0.867, 0.894, 0.882, 1
         line_color: 0, 0, 0, 1
         radius: [24, 24, 24, 24]
-        on_release: app.root.current = 'design_page2'
+        on_release: root.confirm_selection()
+        disabled: True
 
     MDIconButton:
         icon: "arrow-left"
@@ -880,8 +836,9 @@ ScreenManager:
         size: dp(50), dp(50)
         pos_hint: {"x": 0.1, "top": 0.95}
         on_release: 
-            app.root.current = 'home'          
-    
+            root.clear_photos()
+            app.root.current = 'home'
+        
 <DesignPage>:
     id: design_page
     name: 'design'
@@ -1054,7 +1011,7 @@ ScreenManager:
 <ClickableImage@ButtonBehavior+Image>:
 
 <DesignPage2>:
-    name: 'design_page2'
+    name: 'design2'
     canvas.before:
         Color:
             rgba: (240/255, 246/255, 237/255, 1)  # Background color
@@ -1116,13 +1073,13 @@ ScreenManager:
                 Image: 
                     id: photo1
                     size_hint: None, None
-                    size: dp(220), dp(200)
+                    size: dp(300), dp(300)
                     allow_stretch: True
                     
                 Image:
                     id: photo2
                     size_hint: None, None
-                    size: dp(220), dp(200)
+                    size: dp(300), dp(300)
                     allow_stretch: True
                     keep_ratio: True
                     
@@ -1141,14 +1098,14 @@ ScreenManager:
                 Image:
                     id: photo3
                     size_hint: None, None
-                    size: dp(220), dp(200)
+                    size: dp(300), dp(300)
                     allow_stretch: True
                     keep_ratio: True
                     
                 Image:
                     id: photo4
                     size_hint: None, None
-                    size: dp(220), dp(200)
+                    size: dp(300), dp(300)
                     allow_stretch: True
                     keep_ratio: True
                 
@@ -1165,7 +1122,7 @@ ScreenManager:
         mode: "rectangle"
         size_hint_x: None
         width: 400
-        pos_hint: {"center_x": 0.45, "center_y": 0.60}
+        pos_hint: {"center_x": 0.60, "center_y": 0.60}
         font_size: "12sp"
         text_color: 0, 0, 0, 1
         line_color_normal: 0, 0, 0, 1
@@ -1177,7 +1134,7 @@ ScreenManager:
         text: "Add Text to Frame"
         size_hint: 0.1, None
         height: dp(48)
-        pos_hint: {"center_x": 0.45, "center_y": 0.50}
+        pos_hint: {"center_x": 0.60, "center_y": 0.50}
         font_size: 12
         font_style: "Caption"
         text_color: 0, 0, 0, 1
@@ -1190,7 +1147,7 @@ ScreenManager:
         text: "Save Photo"
         size_hint: 0.1, None
         height: dp(48)
-        pos_hint: {"center_x": 0.35, "center_y": 0.40}
+        pos_hint: {"center_x": 0.50, "center_y": 0.40}
         font_size: 12
         font_style: "Caption"
         text_color: 0, 0, 0, 1  # White text for better contrast
@@ -1203,7 +1160,7 @@ ScreenManager:
         text: "Add to Album"
         size_hint: 0.1, None
         height: dp(48)
-        pos_hint: {"center_x": 0.55, "center_y": 0.40}
+        pos_hint: {"center_x": 0.70, "center_y": 0.40}
         font_size: 12
         font_style: "Caption"
         text_color: 0, 0, 0, 1  # White text for better contrast
@@ -1216,7 +1173,7 @@ ScreenManager:
         source: "black.png"
         size_hint: None, None
         size: (150, 150) 
-        pos_hint: {"center_x": 0.35, "center_y": 0.75}
+        pos_hint: {"center_x": 0.49, "center_y": 0.75}
         on_release: 
             root.change_frame_color((0, 0, 0, 1))
             app.change_color((0, 0, 0, 1))  # Black
@@ -1225,7 +1182,7 @@ ScreenManager:
         source: "green.png"
         size_hint: None, None
         size: (150, 150) 
-        pos_hint: {"center_x": 0.40, "center_y": 0.75}
+        pos_hint: {"center_x": 0.54, "center_y": 0.75}
         on_release: 
             root.change_frame_color((0.5, 0.8, 0.7, 1))
             app.change_color((0.5, 0.8, 0.7, 1))  # Green
@@ -1234,7 +1191,7 @@ ScreenManager:
         source: "pink.png"
         size_hint: None, None
         size: (150, 150) 
-        pos_hint: {"center_x": 0.45, "center_y": 0.75}
+        pos_hint: {"center_x": 0.59, "center_y": 0.75}
         on_release: 
             root.change_frame_color((1, 0.8, 0.7, 1))
             app.change_color((1, 0.8, 0.7, 1))  # Pink
@@ -1243,7 +1200,7 @@ ScreenManager:
         source: "violet.png"
         size_hint: None, None
         size: (150, 150) 
-        pos_hint: {"center_x": 0.50, "center_y": 0.75}
+        pos_hint: {"center_x": 0.64, "center_y": 0.75}
         on_release: 
             root.change_frame_color((0.8, 0.7, 0.9, 1))
             app.change_color((0.8, 0.7, 0.9, 1))  # Violet
@@ -1252,12 +1209,12 @@ ScreenManager:
         source: "yellow.png"
         size_hint: None, None
         size: (150, 150) 
-        pos_hint: {"center_x": 0.55, "center_y": 0.75}
+        pos_hint: {"center_x": 0.69, "center_y": 0.75}
         on_release:
             root.change_frame_color((1, 1, 0.7, 1))
             app.change_color((1, 1, 0.7, 1))  # Yellow
 
-<ClickableImage@ButtonBehavior+Image>:            
+<ClickableImage@ButtonBehavior+Image>:     
 
 '''
 
@@ -1534,8 +1491,40 @@ class LogInForm(Screen):
 
 
 class HomePage(Screen):
-    pass
+    def show_logout_confirmation(self):
+        self.dialog = MDDialog(
+            title="Logout Confirmation",
+            text="Are you sure you want to logout?",
+            buttons=[
+                MDFlatButton(
+                    text="NO",
+                    theme_text_color="Custom",
+                    text_color="black",
+                    on_release=lambda x: self.dialog.dismiss()
+                ),
+                MDFlatButton(
+                    text="YES",
+                    theme_text_color="Custom",
+                    text_color="black",
+                    on_release=lambda x: self.confirm_logout()
+                ),
+            ],
+        )
+        self.dialog.open()
 
+    def confirm_logout(self):
+        self.dialog.dismiss()
+        # Perform any logout operations here (clear session, etc.)
+        self.manager.current = 'main'  # Assuming your login screen is named 'main'
+
+    # In your home screen button handlers
+    def go_to_camera_set1(self):
+        App.get_running_app().selected_set = 'set1'
+        self.manager.current = 'camera'
+
+    def go_to_camera_set2(self):
+        App.get_running_app().selected_set = 'set2'
+        self.manager.current = 'camera'
 
 class AccountPage(Screen):
     pass
@@ -1550,146 +1539,79 @@ class ContactPage(Screen):
 
 
 class CameraPage(Screen):
-    photo1_source = StringProperty('')
-    photo2_source = StringProperty('')
-    captured_photos = []
-
-    def crop_image_to_box(self, filename, target_width=160, target_height=200):
-        img = PILImage.open(filename)
-        img = img.resize((800, 1000), PILImage.LANCZOS)
-
-        img.save(filename)
-        img_width, img_height = img.size
-        target_ratio = target_width / target_height
-        current_ratio = img_width / img_height
-
-        if current_ratio > target_ratio:
-            new_width = int(img_height * target_ratio)
-            left = (img_width - new_width) // 2
-            box = (left, 0, left + new_width, img_height)
-        else:
-            new_height = int(img_width / target_ratio)
-            top = (img_height - new_height) // 2
-            box = (0, top, img_width, top + new_height)
-
-    def capture(self):
-        camera = self.ids.cam
-        if camera.texture:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"photo_{timestamp}.png"
-            camera.export_to_png(filename)
-
-            self.crop_image_to_box(filename)
-
-            self.captured_photos.append(filename)
-            if len(self.captured_photos) > 2:
-                self.captured_photos.pop(0)
-
-            if len(self.captured_photos) >= 1:
-                self.photo1_source = self.captured_photos[0]
-            if len(self.captured_photos) == 2:
-                self.photo2_source = self.captured_photos[1]
-
-            self.add_photo_to_stack(filename)
-
-    def add_photo_to_stack(self, path):
-        new_img = Image(
-            source=path,
-            size_hint=(None, None),
-            size=(dp(320), dp(400)),
-
-            allow_stretch=True,
-            keep_ratio=True
-        )
-        self.ids.photo_list.add_widget(new_img)
-
-
-class CameraPage2(Screen):
-    photo1_source = StringProperty('')
-    photo2_source = StringProperty('')
-    photo3_source = StringProperty('')
-    photo4_source = StringProperty('')
-    captured_photos = ListProperty([])
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.captured_photos = []
+        self.photos_taken = 0
+        self.photo_paths = []
 
-    def crop_image_to_box(self, filename, target_width=160, target_height=200):
-        """Corrected method name and implementation"""
-        try:
-            img = PILImage.open(filename)
-            img = img.resize((800, 1000), PILImage.LANCZOS)
-            img.save(filename)
-            return True
-        except Exception as e:
-            print(f"Error cropping image: {e}")
-            return False
+    def on_pre_enter(self):
+        app = App.get_running_app()
+        self.max_photos = app.max_photos  # Get current max photos from app
+        self.photos_taken = 0
+        self.photo_paths = []
+        self.ids.photo_container.clear_widgets()
+        self.update_button_states()
 
     def capture(self):
-        camera = self.ids.cam
-        if not camera.texture:
-            print("Camera texture not available!")
+        app = App.get_running_app()
+        if self.photos_taken >= app.max_photos:
             return
 
         try:
-            # Create photos directory if needed
-            os.makedirs("captured_photos", exist_ok=True)
+            if not os.path.exists('photos'):
+                os.makedirs('photos')
 
-            # Generate unique filename
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"captured_photos/photo_{timestamp}.png"
+            camera = self.ids.cam_widget
+            timestr = time.strftime("%Y%m%d_%H%M%S")
+            photo_path = f"photos/IMG_{timestr}_{self.photos_taken + 1}.png"
 
-            # Capture photo
-            camera.export_to_png(filename)
+            camera.export_to_png(photo_path)
 
-            # Process image
-            if not self.crop_image_to_box(filename):
-                return
+            img = AsyncImage(
+                source=photo_path,
+                size_hint=(None, None),
+                size=(400, 400),
+                allow_stretch=True
+            )
+            if app.current_set == 1:
+                self.ids.photo_container.add_widget(img)
+            else:
+                self.ids.grid_container.add_widget(img)
 
-            # Update photo collection (keep only last 4)
-            self.captured_photos.append(filename)
-            if len(self.captured_photos) > 4:
-                self.captured_photos.pop(0)
-
-            # Store photos in app for design page to access
-            App.get_running_app().captured_photos = self.captured_photos[-4:]
-
-            # Update display but DON'T auto-redirect
-            self.update_photo_display()
+            self.photos_taken += 1
+            self.photo_paths.append(photo_path)
+            app.captured_photos.append(photo_path)
+            self.update_button_states()
 
         except Exception as e:
             print(f"Error capturing photo: {e}")
 
-    def update_photo_display(self):
-        """Update all photo displays"""
-        photos = [self.photo1_source, self.photo2_source,
-                  self.photo3_source, self.photo4_source]
+    def update_button_states(self):
+        app = App.get_running_app()
+        # Disable capture button when max photos reached
+        self.ids.capture_btn.disabled = self.photos_taken >= app.max_photos
+        # Only enable confirm when required photos are taken
+        self.ids.confirm_btn.disabled = self.photos_taken < app.max_photos
 
-        # Clear current displays
-        for widget in self.ids.photo_container.children[:]:
-            self.ids.photo_container.remove_widget(widget)
+    def confirm_selection(self):
+        app = App.get_running_app()
 
-        # Add new photo displays
-        for i, photo in enumerate(self.captured_photos):
-            img = Image(
-                source=photo,
-                size_hint=(None, None),
-                size=(dp(240), dp(300)),
-                allow_stretch=True,
-                keep_ratio=True
-            )
-            self.ids.photo_container.add_widget(img)
+        if app.current_set == 1:
+            # For Set 1 - send last 2 photos to DesignPage
+            app.design1_photos = app.captured_photos[-2:]
+            self.manager.current = 'design'
+        else:
+            # For Set 2 - send last 4 photos to DesignPage2
+            app.design2_photos = app.captured_photos[-4:]
+            self.manager.current = 'design2'
 
-        # Update properties
-        if len(self.captured_photos) > 0:
-            self.photo1_source = self.captured_photos[0]
-        if len(self.captured_photos) > 1:
-            self.photo2_source = self.captured_photos[1]
-        if len(self.captured_photos) > 2:
-            self.photo3_source = self.captured_photos[2]
-        if len(self.captured_photos) > 3:
-            self.photo4_source = self.captured_photos[3]
+        # Reset for next capture
+        self.photos_taken = 0
+        self.photo_paths = []
+        self.ids.photo_container.clear_widgets()
+        if hasattr(self.ids, 'grid_container'):
+            self.ids.grid_container.clear_widgets()
+
 
 class ClickableImage(ButtonBehavior, Image):
     def on_press(self):
@@ -1697,6 +1619,12 @@ class ClickableImage(ButtonBehavior, Image):
 
 
 class CameraWidget(Image):
+    camera = cv2.VideoCapture(0)
+    if not camera.isOpened():
+        print("⚠️ Camera could not be opened.")
+        camera.release()
+        camera = None
+
     def __init__(self, **kwargs):
         super(CameraWidget, self).__init__(**kwargs)
         self.capture = cv2.VideoCapture(0)
@@ -1712,7 +1640,14 @@ class CameraWidget(Image):
             self.texture = texture
 
 
+
 class DesignPage(Screen):
+    def on_pre_enter(self):
+        app = App.get_running_app()
+        # Update both photo widgets
+        self.ids.photo1.source = app.design1_photos[0] if len(app.design1_photos) > 0 else ''
+        self.ids.photo2.source = app.design1_photos[1] if len(app.design1_photos) > 1 else ''
+
     def add_text_to_frame(self):
         """Add text to the frame below the photos"""
         text = self.ids.frame_text.text
@@ -1733,49 +1668,23 @@ class DesignPage(Screen):
         self.ids.black_box_layout.add_widget(text_label)
 
         # Clear the text input
-        self.ids.frame_text.text = "design_page2"
+        self.ids.frame_text.text = ""
+
 
 class DesignPage2(Screen):
     def on_pre_enter(self):
-        # Get the stored photos from the app
         app = App.get_running_app()
-        photos = getattr(app, 'captured_photos', [])
-
-        # Update all four image widgets
+        # Update all four photo widgets
         for i in range(1, 5):
-            photo_id = f'photo{i}'
-            if hasattr(self.ids, photo_id):
-                photo_widget = getattr(self.ids, photo_id)
-                if i <= len(photos):
-                    photo_widget.source = photos[i - 1]
-                else:
-                    photo_widget.source = ''
-
-    def go_to_design(self):
-        design_screen = self.manager.get_screen('design')
-        photos = self.captured_photos[-4:]  # Get last 4 photos
-
-        design_screen.ids.photo1.source = photos[0] if len(photos) > 0 else ''
-        design_screen.ids.photo2.source = photos[1] if len(photos) > 1 else ''
-        design_screen.ids.photo3.source = photos[2] if len(photos) > 2 else ''
-        design_screen.ids.photo4.source = photos[3] if len(photos) > 3 else ''
-
-        self.manager.current = 'design'
-
-    def update_photos(self, photo_paths):
-        """Manually update photos when coming from camera page"""
-        for i in range(1, 5):
-            widget = getattr(self.ids, f'photo{i}', None)
-            if widget and i <= len(photo_paths):
-                widget.source = photo_paths[i - 1]
-            elif widget:
-                widget.source = ''
+            widget = getattr(self.ids, f'photo{i}')
+            widget.source = app.design2_photos[i - 1] if i <= len(app.design2_photos) else ''
 
     def change_frame_color(self, color):
         """Method to change the frame color specifically for this screen"""
         if hasattr(self.ids, 'black_box_layout'):
             self.ids.black_box_layout.md_bg_color = color
             print(f"Color changed to {color}")
+
 
 class PhotoDisplay(BoxLayout):
     def __init__(self, **kwargs):
@@ -1855,6 +1764,14 @@ class PhotoDisplay(BoxLayout):
 
 
 class Photobooth(MDApp):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.current_set = 1
+        self.max_photos = 2
+        self.captured_photos = []
+        self.design1_photos = []
+        self.design2_photos = []
+
     def build(self):
         Window.size = (1024, 768)
         return Builder.load_string(KV)
@@ -1888,55 +1805,118 @@ class Photobooth(MDApp):
     def show_account_screen(self):
         print("ACCOUNT clicked!")
 
-    def take_photo(self):
-        camera = self.root.get_screen('camera').ids.cam
-        texture = camera.texture
-
-        if texture:
-            flipped_texture = texture.get_region(0, 0, texture.width, texture.height)
-            flipped_texture.flip_vertical()
-
+    def capture(self):
+        try:
             timestamp = int(time.time())
-            photo_path = f"photo_{timestamp}.png"
+            photo_path = f"photos/photo_{timestamp}.png"
+            os.makedirs('photos', exist_ok=True)
 
-            flipped_texture.save(photo_path)
+            # Get camera widget and save photo
+            camera = self.root.get_screen('camera').ids.cam_widget
+            camera.export_to_png(photo_path)
 
-            self.add_photo(photo_path)
-        else:
-            print("No camera texture found!")
+            # Add to captured photos
+            self.captured_photos.append(photo_path)
 
-        if camera.texture:
-            filename = "captured_photo.png"
-            camera.export_to_png(filename)
+            # Update photo container
+            self.update_photo_container()
 
-            design_screen = self.root.get_screen('design')
-            design_screen.ids.photo1.source = filename
-            design_screen.ids.photo2.source = filename
+        except Exception as e:
+            print(f"Error capturing photo: {e}")
+
+        def update_photo_container(self):
+            """Update the photo display in camera page"""
+            camera_screen = self.root.get_screen('camera')
+            container = camera_screen.ids.photo_container
+            container.clear_widgets()
+
+            # Add all captured photos to container
+            for photo in self.captured_photos:
+                img = AsyncImage(
+                    source=photo,
+                    size_hint=(None, None),
+                    size=(250, 250),
+                    allow_stretch=True
+                )
+                container.add_widget(img)
+
+    def take_photo(self):
+        try:
+            camera = self.root.get_screen('camera').ids.camera_widget
+            if camera.texture:
+                timestamp = int(time.time())
+                photo_path = f"photos/photo_{timestamp}.png"
+                os.makedirs('photos', exist_ok = True)
+                camera.export_to_png(photo_path)
+                self.add_photo(photo_path)
+        except Exception as e:
+            print(f"Error taking photo: {e}")
 
     def add_photo(self, photo_path):
-        photo_list = self.root.get_screen('camera').ids.photo_list
-        if len(photo_list.children) >= 2:
-            photo_list.clear_widgets()
-        img = Image(source=photo_path, size_hint=(None, None), size=(320, 400))
-        photo_list.add_widget(img)
+        try:
+            camera_screen = self.root.get_screen('camera')
+            photo_container = camera_screen.ids.photo_container
+
+            if len(photo_container.children) >= camera_screen.max_photos:
+                photo_container.clear_widgets()
+
+            img = AsyncImage(
+                source=photo_path,
+                size_hint=(None, None),
+                size=(250, 250),
+                allow_stretch=True
+            )
+            photo_container.add_widget(img)
+            self.captured_photos.append(photo_path)
+            camera_screen.update_button_states()
+        except Exception as e:
+            print(f"Error setting photo mode:{e}")
 
     def change_color(self, color):
-        def change_color(self, color):
-            print(f"Attempting to change color to {color}")  # Debug print
-            current_screen = self.root.current
-            print(f"Current screen is {current_screen}")  # Debug print
+        print(f"Attempting to change color to {color}")  # Debug print
+        current_screen = self.root.current
+        print(f"Current screen is {current_screen}")  # Debug print
 
-            try:
-                screen = self.root.get_screen(current_screen)
-                if hasattr(screen.ids, 'black_box_layout'):
-                    screen.ids.black_box_layout.md_bg_color = color
-                    print(f"Color changed on {current_screen}!")
-                else:
-                    print("No black_box_layout found on current screen")
-            except Exception as e:
-                print(f"Error changing color: {e}")
+        try:
+            screen = self.root.get_screen(current_screen)
+            if hasattr(screen.ids, 'black_box_layout'):
+                screen.ids.black_box_layout.md_bg_color = color
+                print(f"Color changed on {current_screen}!")
+            else:
+                print("No black_box_layout found on current screen")
+        except Exception as e:
+            print(f"Error changing color: {e}")
 
+    def set_photo_mode(self, set_number):
+        self.current_set = set_number
+        self.max_photos = 2 if set_number == 1 else 4
+        print(f"Set to{set_number}, max photos: {self.max_photos}")
 
+    def confirm_selection(self):
+        """Called when confirm button is clicked"""
+        if not self.captured_photos:
+            return
+
+        # Store selected photos (or all if you want)
+        self.selected_photos = self.captured_photos.copy()
+
+        # Switch to design page and update images
+        self.root.current = 'design'
+        self.update_design_page()
+
+    def update_design_page(self):
+        """Update the images in design page"""
+        design_screen = self.root.get_screen('design')
+
+        # Update photo1 (first image)
+        if len(self.selected_photos) > 0:
+            design_screen.ids.photo1.source = self.selected_photos[0]
+
+        # Update photo2 (second image if exists)
+        if len(self.selected_photos) > 1:
+            design_screen.ids.photo2.source = self.selected_photos[1]
+        else:
+            design_screen.ids.photo2.source = ""
 
 config = {
     "apiKey": "AIzaSyAWE6tdwKl9lrLfQidIcd4wAbiWpPHejVc",
