@@ -749,7 +749,6 @@ ScreenManager:
 
 <CameraPage>:
     name: 'camera'
-    max_photos: 2  
     canvas.before:
         Color:
             rgba: (240/255, 246/255, 237/255, 1)
@@ -764,7 +763,7 @@ ScreenManager:
 
         BoxLayout:
             orientation: 'vertical'
-            padding: [dp(60), dp(30), 0, 0]
+            size_hint: (0.6, 1)
             spacing: dp(10)
 
             Camera:
@@ -792,24 +791,17 @@ ScreenManager:
                 disabled: False
 
         ScrollView:
-            size_hint: 1, 1
+            size_hint: (0.4, 1)
             do_scroll_x: False
-            
-            BoxLayout:
+                
+            GridLayout:
                 id: photo_container
-                orientation: 'vertical' if app.current_set == 1 else 'horizontal'
-                spacing: dp(20)
+                cols: 1 if app.current_set == 1 else 2 
+                spacing: dp(15)
                 padding: dp(10)
                 size_hint_y: None
                 height: self.minimum_height
                 
-                GridLayout:
-                    id: grid_container
-                    cols: 2
-                    spacing: dp(20)
-                    size_hint_y: None
-                    height: self.minimum_height
-                    visible: app.current_set == 2
 
     MDRoundFlatButton:   
         id: confirm_btn
@@ -1539,6 +1531,8 @@ class ContactPage(Screen):
 
 
 class CameraPage(Screen):
+    max_photos = NumericProperty(2)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.photos_taken = 0
@@ -1546,15 +1540,16 @@ class CameraPage(Screen):
 
     def on_pre_enter(self):
         app = App.get_running_app()
-        self.max_photos = app.max_photos  # Get current max photos from app
+        self.max_photos = 2 if app.current_set == 1 else 4
         self.photos_taken = 0
         self.photo_paths = []
-        self.ids.photo_container.clear_widgets()
+        if hasattr(self, 'ids') and 'photo_container' in self.ids:
+            self.ids.photo_container.clear_widgets()
         self.update_button_states()
 
     def capture(self):
         app = App.get_running_app()
-        if self.photos_taken >= app.max_photos:
+        if self.photos_taken >= self.max_photos:
             return
 
         try:
@@ -1562,21 +1557,22 @@ class CameraPage(Screen):
                 os.makedirs('photos')
 
             camera = self.ids.cam_widget
-            timestr = time.strftime("%Y%m%d_%H%M%S")
-            photo_path = f"photos/IMG_{timestr}_{self.photos_taken + 1}.png"
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            photo_path = f"photos/IMG_{timestamp}_{self.photos_taken + 1}.png"
 
             camera.export_to_png(photo_path)
 
             img = AsyncImage(
                 source=photo_path,
                 size_hint=(None, None),
-                size=(400, 400),
-                allow_stretch=True
+                size=(300, 300),  # Adjusted size to fit better
+                allow_stretch=True,
+                keep_ratio=True
             )
-            if app.current_set == 1:
-                self.ids.photo_container.add_widget(img)
-            else:
-                self.ids.grid_container.add_widget(img)
+
+            # Add to container
+            container = self.ids.photo_container
+            container.add_widget(img)
 
             self.photos_taken += 1
             self.photo_paths.append(photo_path)
@@ -1587,31 +1583,23 @@ class CameraPage(Screen):
             print(f"Error capturing photo: {e}")
 
     def update_button_states(self):
-        app = App.get_running_app()
-        # Disable capture button when max photos reached
-        self.ids.capture_btn.disabled = self.photos_taken >= app.max_photos
-        # Only enable confirm when required photos are taken
-        self.ids.confirm_btn.disabled = self.photos_taken < app.max_photos
+        self.ids.capture_btn.disabled = self.photos_taken >= self.max_photos
+        self.ids.confirm_btn.disabled = self.photos_taken < self.max_photos
 
     def confirm_selection(self):
         app = App.get_running_app()
-
         if app.current_set == 1:
-            # For Set 1 - send last 2 photos to DesignPage
-            app.design1_photos = app.captured_photos[-2:]
+            app.design1_photos = self.photo_paths[-2:]  # Last 2 photos for Set 1
             self.manager.current = 'design'
         else:
-            # For Set 2 - send last 4 photos to DesignPage2
-            app.design2_photos = app.captured_photos[-4:]
+            app.design2_photos = self.photo_paths[-4:]  # Last 4 photos for Set 2
             self.manager.current = 'design2'
 
-        # Reset for next capture
+    def clear_photos(self):
+        if hasattr(self, 'ids') and 'photo_container' in self.ids:
+            self.ids.photo_container.clear_widgets()
         self.photos_taken = 0
         self.photo_paths = []
-        self.ids.photo_container.clear_widgets()
-        if hasattr(self.ids, 'grid_container'):
-            self.ids.grid_container.clear_widgets()
-
 
 class ClickableImage(ButtonBehavior, Image):
     def on_press(self):
@@ -1638,8 +1626,6 @@ class CameraWidget(Image):
             texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
             texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
             self.texture = texture
-
-
 
 class DesignPage(Screen):
     def on_pre_enter(self):
